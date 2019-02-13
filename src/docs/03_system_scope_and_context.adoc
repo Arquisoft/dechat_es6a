@@ -5,8 +5,7 @@
 [role="arc42help"]
 ****
 .Contents
-System scope and context - as the name suggests - delimits your system (i.e. your scope) from all its communication partners
-(neighboring systems and users, i.e. the context of your system). It thereby specifies the external interfaces.
+Our system scope is the implementation and testing of a descentralized chat using SOLID.
 
 If necessary, differentiate the business context (domain specific inputs and outputs) from the technical context (channels, protocols, hardware).
 
