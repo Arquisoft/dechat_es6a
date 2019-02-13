@@ -15,10 +15,6 @@ Our system scope is the implementation and testing of a descentralized chat usin
 
 [role="arc42help"]
 ****
-There are three interested parts:
-* **Subject's teachers:** They will evaluate the final project.
-* **Inrupt:** The startup that has created the technology that is used (SOLID).
-* **Users:** They will use the chat. They can communicate with other users through messages or files, but their communication will not be stored anywhere.
 
 For the diagram we used the tool [plantuml] (http://plantuml.com/es/) .
 
