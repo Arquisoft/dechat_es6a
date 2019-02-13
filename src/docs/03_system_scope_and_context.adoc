@@ -5,18 +5,9 @@
 [role="arc42help"]
 ****
 .Contents
-Our system scope is the implementation and testing of a descentralized chat using SOLID.
+This project is part of the Software Architecture subject.
+Our system scope is the implementation and testing of a descentralized chat using SOLID. For this, we use the architectural style peer-to-peer.
 
-If necessary, differentiate the business context (domain specific inputs and outputs) from the technical context (channels, protocols, hardware).
-
-.Motivation
-The domain interfaces and technical interfaces to communication partners are among your system's most critical aspects. Make sure that you completely understand them.
-
-.Form
-Various options:
-
-* Context diagrams
-* Lists of communication partners and their interfaces.
 ****
 
 
@@ -24,42 +15,21 @@ Various options:
 
 [role="arc42help"]
 ****
-.Contents
-Specification of *all* communication partners (users, IT-systems, ...) with explanations of domain specific inputs and outputs or interfaces.
-Optionally you can add domain specific formats or communication protocols.
+There are three interested parts:
+* **Subject's teachers:** They will evaluate the final project.
+* **Inrupt:** The startup that has created the technology that is used (SOLID).
+* **Users:** They will use the chat. They can communicate with other users through messages or files, but their communication will not be stored anywhere.
 
-.Motivation
-All stakeholders should understand which data are exchanged with the environment of the system.
-
-.Form
-All kinds of diagrams that show the system as a black box and specify the domain interfaces to communication partners.
-
-Alternatively (or additionally) you can use a table.
-The title of the table is the name of your system, the three columns contain the name of the communication partner, the inputs, and the outputs.
-****
-
-**<Diagram or Table>**
-
-**<optionally: Explanation of external domain interfaces>**
-
-=== Technical Context
-
-[role="arc42help"]
-****
-.Contents
-Technical interfaces (channels and transmission media) linking your system to its environment. In addition a mapping of domain specific input/output to the channels, i.e. an explanation with I/O uses which channel.
-
-.Motivation
-Many stakeholders make architectural decision based on the technical interfaces between the system and its context. Especially infrastructure or hardware designers decide these technical interfaces.
-
-.Form
-E.g. UML deployment diagram describing channels to neighboring systems,
-together with a mapping table showing the relationships between channels and input/output.
+For the diagram we used the tool [plantuml] (http://plantuml.com/es/) .
 
 ****
 
-**<Diagram or Table>**
+**Business Context diagram**
 
-**<optionally: Explanation of technical interfaces>**
+@startuml
 
-**<Mapping Input/Output to Channels>**
+User --> (Application) : Looks for another user
+
+:Another User: <-- (Application) : Sends messages and files.
+
+@enduml
