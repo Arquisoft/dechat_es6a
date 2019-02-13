@@ -26,6 +26,6 @@ For the diagram we used the tool [plantuml] (http://plantuml.com/es/) .
 
 User --> (Application) : Looks for another user
 
-:Another User: <-- (Application) : Sends messages and files.
+Another User <-- (Application) : Sends messages and files.
 
 @enduml
