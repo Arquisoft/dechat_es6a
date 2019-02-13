@@ -4,5 +4,30 @@
 
 [role="arc42help"]
 ****
+.Technical Constraints
+|===
+|Constraint |Explanation 
 
+|Decentralized architecture.
+|The project architecture must be decentralized, so that user data is separated from the application that makes use of it. To achieve this, the app will be based on solid specifications.
+
+|===
+
+.Organizational Constraints
+|===
+|Constraint |Explanation 
+
+|Software development through GitHub.
+|A GitHub repository (dechat_es6a) must be used in order to keep the development updated and available to all participants at any time.
+
+|===
+
+.Conventions
+|===
+|Constraint |Explanation 
+
+|Arc42 template for documentation.
+|As a template for the documentation of the project, we must use Arc42 (https://arc42.org/).
+
+|===
 ****
