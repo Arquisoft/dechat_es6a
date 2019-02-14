@@ -4,6 +4,7 @@
 [role="arc42help"]
 ****
 The goal of this project is to create a decentralized chat app based on link:https://github.com/solid/solid-spec[Solid specifications].
+
 In this document, we are describing relevant requirements of the project, quality goals for the software architecture and the relevant stakeholders and their expectations.
 ****
 
@@ -11,20 +12,13 @@ In this document, we are describing relevant requirements of the project, qualit
 
 [role="arc42help"]
 ****
-.Contents
-Short description of the functional requirements, driving forces, extract (or abstract)
-of requirements. Link to (hopefully existing) requirements documents
-(with version number and information where to find it).
-
-.Motivation
-From the point of view of the end users a system is created or modified to
-improve support of a business activity and/or improve the quality.
-
-.Form
-Short textual description, probably in tabular use-case format.
-If requirements documents exist this overview should refer to these documents.
-
-Keep these excerpts as short as possible. Balance readability of this document with potential redundancy w.r.t to requirements documents.
+|===
+| Requirement | Description
+| Decentralized arquitecture | The application will be separated from the data storage, and the users data will be stored in their own link:https://solid.inrupt.com/how-it-works[PODs].
+| Multimedia messages | Accompanying text messages, the app will allow users to send photos and videos. 
+| Group chats | Users can make a friends group to chat with all the members simoultaneosly.
+| Notifications | The app will send a notification when the user recives a message.
+|===
 ****
 
 === Quality Goals
