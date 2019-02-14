@@ -3,11 +3,8 @@
 
 [role="arc42help"]
 ****
-Describes the relevant requirements and the driving forces that software architects and development team must consider. These include
-
-* underlying business goals, essential features and functional requirements for the system
-* quality goals for the architecture
-* relevant stakeholders and their expectations
+The goal of this project is to create a decentralized chat app based on link:https://github.com/solid/solid-spec[Solid specifications].
+In this document, we are describing relevant requirements of the project, quality goals for the software architecture and the relevant stakeholders and their expectations.
 ****
 
 === Requirements Overview
