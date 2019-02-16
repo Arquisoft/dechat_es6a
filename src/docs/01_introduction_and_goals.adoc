@@ -13,7 +13,7 @@ In this document, we are describing relevant requirements of the project, qualit
 [role="arc42help"]
 ****
 |===
-| Requirement | Description
+| *Requirement* | *Description*
 | Decentralized arquitecture | The application will be separated from the data storage, and the users data will be stored in their own link:https://solid.inrupt.com/how-it-works[PODs].
 | Multimedia messages | Accompanying text messages, the app will allow users to send photos and videos. 
 | Group chats | Users can make a friends group to chat with all the members simoultaneosly.
@@ -25,15 +25,12 @@ In this document, we are describing relevant requirements of the project, qualit
 
 [role="arc42help"]
 ****
-.Contents
-The top three (max five) quality goals for the architecture whose fulfillment is of highest importance to the major stakeholders. We really mean quality goals for the architecture. Don't confuse them with project goals. They are not necessarily identical.
-
-.Motivation
-You should know the quality goals of your most important stakeholders, since they will influence fundamental architectural decisions. Make sure to be very concrete about these qualities, avoid buzzwords.
-If you as an architect do not know how the quality of your work will be judged …
-
-.Form
-A table with quality goals and concrete scenarios, ordered by priorities
+|===
+| *Goal* | *Description* | *Priority*
+| Efficiency | Messages will be sent instantly to ensure smooth communication. | High, high
+| Security | Only the members of a chat can see the messages of it. | High, medium
+| Usability | The application must be easy for non-technical people | High, medium
+|===
 ****
 
 === Stakeholders
@@ -60,7 +57,7 @@ Table with role names, person names, and their expectations with respect to the 
 
 [options="header",cols="1,2,2"]
 |===
-|Role/Name|Contact|Expectations
+| *Role/Name* | *Contact* | *Expectations*
 | _<Role-1>_ | _<Contact-1>_ | _<Expectation-1>_
 | _<Role-2>_ | _<Contact-2>_ | _<Expectation-2>_
 |===
