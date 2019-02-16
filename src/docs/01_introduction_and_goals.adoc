@@ -3,7 +3,7 @@
 
 [role="arc42help"]
 ****
-The goal of this project is to create a decentralized chat app based on link:https://github.com/solid/solid-spec[Solid specifications].
+The goal of this project is to create a decentralized chat app (DeChat) based on link:https://github.com/solid/solid-spec[Solid specifications].
 
 In this document, we are describing relevant requirements of the project, quality goals for the software architecture and the relevant stakeholders and their expectations.
 ****
@@ -57,7 +57,9 @@ Table with role names, person names, and their expectations with respect to the 
 
 [options="header",cols="1,2,2"]
 |===
-| *Role/Name* | *Contact* | *Expectations*
-| _<Role-1>_ | _<Contact-1>_ | _<Expectation-1>_
-| _<Role-2>_ | _<Contact-2>_ | _<Expectation-2>_
+| *Role/Name* | *Description* | *Expectations*
+| DeChat users | Users of the developed app | Chat with a person or group of people owning their own data.
+| José Emilio Labra Gayo | Coordinator of the Software Architecture subject | 
+| Inrupt | Company interested in de application | 
+| Development team | Members of the team that developes the app | 
 |===
