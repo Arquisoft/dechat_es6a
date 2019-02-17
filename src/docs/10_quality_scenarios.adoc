@@ -14,20 +14,9 @@ We will begin by explaining these quality requirements to later form a Quality t
 
 [role="arc42help"]
 ****
-.Content
-The quality tree (as defined in ATAM – Architecture Tradeoff Analysis Method) with quality/evaluation scenarios as leafs.
+In this section you can see the quality tree (ATAM) with its most important quality attributes.
 
-.Motivation
-The tree structure with priorities provides an overview for a sometimes large number of quality requirements.
-
-.Form
-The quality tree is a high-level overview of the quality goals and requirements:
-
-* tree-like refinement of the term "quality". Use "quality" or "usefulness" as a root
-* a mind map with quality categories as main branches
-
-In any case the tree should include links to the scenarios of the following section.
-****
+image::https://github.com/Arquisoft/dechat_es6a/blob/docs/scenarios/src/docs/images/ATAM.png[Settings gh-pages,400]
 
 === Quality Scenarios
 
