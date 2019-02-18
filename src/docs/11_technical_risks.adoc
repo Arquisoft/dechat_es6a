@@ -4,14 +4,10 @@
 
 [role="arc42help"]
 ****
-.Contents
-A list of identified technical risks or technical debts, ordered by priority
+In this document we will be talking about risks and technical debts, ordered by priority. As its said, we have the following:
 
-.Motivation
-“Risk management is project management for grown-ups” (Tim Lister, Atlantic Systems Guild.) 
-
-This should be your motto for systematic detection and evaluation of risks and technical debts in the architecture, which will be needed by management stakeholders (e.g. project managers, product owners) as part of the overall risk analysis and measurement planning.
-
-.Form
-List of risks and/or technical debts, probably including suggested measures to minimize, mitigate or avoid risks or reduce technical debts.
-****
+* SOLID Documentation: There are very few resources, so our information source is limited.
+* Amount of libs: As its said before, there are few resources concerning SOLID itself, so the amount of libs compatible with SOLID technology are scarce. We will be looking for developers
+* Language : We are not used to JavaScript, and the information found refers to it, so we will have to check it out. We could also look for frameworks like Angular or Node.js that makes js development more comfortable.
+* RDF : We know the basic concepts of RDF, but we need to learn SPARQL to understand how SOLID base works.
+* Docker: We had a demonstration about Docker and how a POD could be created, so we talked once about using it. However, we haven't enough knowledge about it, so, if we are finally using it, we will have to spend time learning how it works.
