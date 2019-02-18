@@ -11,3 +11,5 @@ In this document we will be talking about risks and technical debts, ordered by 
 * Language : We are not used to JavaScript, and the information found refers to it, so we will have to check it out. We could also look for frameworks like Angular or Node.js that makes js development more comfortable.
 * RDF : We know the basic concepts of RDF, but we need to learn SPARQL to understand how SOLID base works.
 * Docker: We had a demonstration about Docker and how a POD could be created, so we talked once about using it. However, we haven't enough knowledge about it, so, if we are finally using it, we will have to spend time learning how it works.
+
+WARNING: This document is WIP (Work in Progress), so it may change in the near future
