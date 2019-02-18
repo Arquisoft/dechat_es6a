@@ -4,10 +4,11 @@
 
 [role="arc42help"]
 ****
-In this document we will talk about the most important and outstanding quality requirements, without neglecting other minor quality requirements that do not cause high risks when they are not fully achieved.
+In this document we will talk about the most important and outstanding quality requirements.
 
-We will begin by explaining these quality requirements to later form a Quality tree with all of them. Once this is done, we will speak and exemplify certain quality scenarios about these requirements.
+We will start by seeing a quality tree with all these quality requirements, as well as its most significant quality scenarios.
 
+Later you can see in depth the quality scenarios.
 ****
 
 === Quality Tree
@@ -16,7 +17,7 @@ We will begin by explaining these quality requirements to later form a Quality t
 ****
 In this section you can see the quality tree (ATAM) with his most important quality attributes and quality scenarios.
 
-image::https://github.com/Arquisoft/dechat_es6a/blob/docs/scenarios/src/docs/images/ATAM%20(Quality%20Tree).png[Settings gh-pages,400]
+image::https://github.com/Arquisoft/dechat_es6a/blob/docs/scenarios/src/docs/images/ATAM%20(Quality%20Tree).png[Settings gh-pages,800]
 
 ****
 
