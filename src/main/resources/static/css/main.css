@@ -15,7 +15,7 @@ a {
   padding-bottom: 20px;
 }
 
-#login-required, #theme-selector, #write-permission, #invitation-response, #real-time-setup, #real-time-quit, #real-time-opponent-quit {
+#login-required, #theme-selector, #write-permission, #invitation-response {
   color: crimson;
 }
 
@@ -61,12 +61,12 @@ a {
   max-width: 500px;
 }
 
-#continue-game-table {
+#continue-chat-table {
   table-layout: fixed!important;
   word-wrap: break-word;
 }
 
-#continue-game-table tr {
+#continue-chat-table tr {
   font-size: 14px;
 }
 
@@ -78,7 +78,7 @@ tr.clickable-row {
   cursor: pointer;
 }
 
-.btn-cancel, #start-new-game-btn, #join-game-btn, #stop-playing {
+.btn-cancel, #start-new-chat-btn, #join-chat-btn, #stop-playing {
   margin-bottom: 25px;
 }
 

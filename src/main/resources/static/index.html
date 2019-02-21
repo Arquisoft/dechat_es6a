@@ -35,24 +35,24 @@
       </nav>
 
       <div id="content" class="row justify-content-center align-items-center">
-        <div id="game-options" class="col-6 text-center">
+        <div id="chat-options" class="col-6 text-center">
           <button id="new-btn" type="button" class="btn btn-dark btn-lg"> New chat</button>	  
           <button id="join-btn" type="button" class="btn btn-dark btn-lg">Join chat</button>
           <button id="continue-btn" type="button" class="btn btn-dark btn-lg">Continue chat</button>
         </div>
 
-        <div id="new-game-options" class="col-6 hidden">
+        <div id="new-chat-options" class="col-6 hidden">
           <form>
             <div class="form-group">
               <label for="contacts">Open chat with</label>
-              <input type="text" class="form-control rounded-0" id="contact-webid" placeholder="Enter opponent's WebID" value="https://ph2.solid.community/profile/card#me">
+              <input type="text" class="form-control rounded-0" id="contact-webid" placeholder="Enter interlocutor's WebID" value="https://ph2.solid.community/profile/card#me">
               <select id="contacts"></select>
             </div>
             <div class="form-group">
               <label for="data-url">Path on your POD to store the chat</label>
               <input type="text" class="form-control rounded-0" id="data-url" aria-describedby="pathHelp" placeholder="Enter path">
             </div>
-            <button id="start-new-game-btn" type="button" class="btn btn-dark">Start chat</button>
+            <button id="start-new-chat-btn" type="button" class="btn btn-dark">Start chat</button>
             <button type="button" class="btn-cancel btn btn-dark">Cancel</button>
           </form>
         </div>  
