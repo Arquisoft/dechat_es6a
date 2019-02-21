@@ -22,10 +22,4 @@ For the diagram we used the tool [plantuml] (http://plantuml.com/es/) .
 
 **Business Context diagram**
 
-@startuml
-
-User --> (Application) : Looks for another user
-
-Another User <-- (Application) : Sends messages and files.
-
-@enduml
+image::https://github.com/Arquisoft/dechat_es6a/blob/docs/scope/src/docs/images/BussinesContext.jpg
