@@ -33,6 +33,7 @@ In this document, we are describing relevant requirements of the project, qualit
 | Security | Only the members of a chat can see the messages of it. | High, medium
 | Usability | The application must be easy for non-technical people | High, medium
 |===
+The two values indicated in the priority mean, respectively, how important it is to success, and how difficult it is to achieve.
 ****
 
 === Stakeholders
