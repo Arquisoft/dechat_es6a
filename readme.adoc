@@ -12,6 +12,8 @@ Jorge Álvarez Fidalgo
 
 Othmane Bakhtaoui
 
+Mª Isabel Fernández Pérez
+
 == Build documentation
 
 The documentation is done in http://asciidoc.org/[AsciiDoc]
