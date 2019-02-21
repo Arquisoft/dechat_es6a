@@ -60,5 +60,49 @@ class DeChatCore {
 
     return formattedName;
   }
+	
+  /**
+   * This method returns the object of resource via a predicate.
+   * @param url: the url of the resource.
+   * @param predicate: the predicate for which to look.
+   * @returns {Promise}: a promise that resolves with the object or null if none is found.
+   */
+  
+async getObjectFromPredicateForResource(url, predicate) {
+    const deferred = Q.defer();
+    const rdfjsSource = await rdfjsSourceFromUrl(url, this.fetch);
+
+    if (rdfjsSource) {
+      const engine = newEngine();
+
+      engine.query(`SELECT ?o {
+    <${url}> <${predicate}> ?o.
+  }`,
+        {sources: [{type: 'rdfjsSource', value: rdfjsSource}]})
+        .then(function (result) {
+          result.bindingsStream.on('data', function (data) {
+            data = data.toObject();
+
+            deferred.resolve(data['?o']);
+          });
+
+          result.bindingsStream.on('end', function () {
+            deferred.resolve(null);
+          });
+        });
+    } else {
+      deferred.resolve(null);
+    }
+
+    return deferred.promise;
+  }
+	
+  getDefaultDataUrl(webId) {
+    const parsedWebId = URI.parse(webId);
+    const today = format(new Date(), 'yyyyMMdd');
+
+    return  `${parsedWebId.scheme}://${parsedWebId.host}/public/chess_${today}.ttl`;
+  }
+
 }
 module.exports = DeChatCore;
