@@ -19,7 +19,7 @@ $('#logout-btn').click(() => {
 
 auth.trackSession(async session => {
   const loggedIn = !!session;
-  alert(`logged in: ${loggedIn}`);
+  //alert(`logged in: ${loggedIn}`);
 
   if (loggedIn) {
     $('#user-menu').removeClass('hidden');
@@ -38,7 +38,7 @@ auth.trackSession(async session => {
     // refresh every 5sec
     refreshIntervalId = setInterval(checkForNotifications, 5000);
   } else {
-	alert("you're not logged in");
+	  //alert("you're not logged in");
     $('#nav-login-btn').removeClass('hidden');
     $('#user-menu').addClass('hidden');
     $('#new-chat-options').addClass('hidden');
@@ -66,7 +66,7 @@ $('#new-btn').click(async () => {
         $select.append(`<option value="${friend}">${name}</option>`);
     }
   } else {
-	  alert("NOT logged in");
+	  //alert("NOT logged in");
     $('#login-required').modal('show');
   }
 });
