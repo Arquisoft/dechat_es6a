@@ -60,5 +60,5 @@ class DeChatCore {
 
     return formattedName;
   }
-
+}
 module.exports = DeChatCore;
