@@ -55,6 +55,29 @@
          </form>
       </div>
 	  
+	  <div id="join-chat-options" class="col-6 hidden">
+          <div id='join-loading'>
+            <span id="join-looking">Looking for chat invites...</span>
+            <span id="no-join" class="hidden">No chats to join were found.</span>
+            <div class="form-group">
+              <button type="button" class="btn-cancel btn btn-dark">Cancel</button>
+            </div>
+          </div>
+          <form id="join-form" class="hidden">
+            <div class="form-group">
+              <label for="chat-urls">Chat you wish to join</label>
+              <select id="chat-urls"></select>
+            </div>
+            <div class="form-group">
+              <label for="join-data-url">Path on your POD to store the chat</label>
+              <input type="text" class="form-control rounded-0" id="join-data-url" aria-describedby="pathHelp2" placeholder="Enter path">
+              <small id="pathHelp2" class="form-text">This is the path of the file on your Solid POD where your personal chat data will be stored.</small>
+            </div>
+            <button id="join-chat-btn" type="button" class="btn btn-dark">Join</button>
+            <button type="button" class="btn-cancel btn btn-dark">Cancel</button>
+          </form>
+        </div>
+	  
 	  <div class="modal fade" id="login-required" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
           <div class="modal-content">
