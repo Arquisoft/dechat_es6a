@@ -101,7 +101,12 @@ async getObjectFromPredicateForResource(url, predicate) {
     const parsedWebId = URI.parse(webId);
     const today = format(new Date(), 'yyyyMMdd');
 
-    return  `${parsedWebId.scheme}://${parsedWebId.host}/public/chess_${today}.ttl`;
+    return  `${parsedWebId.scheme}://${parsedWebId.host}/public/dechat_${today}.ttl`;
+  }
+  
+   async writePermission(url, dataSync) {
+    const response = await dataSync.executeSPARQLUpdateForUser(url, 'INSERT DATA {}');
+    return response.status === 200;
   }
 
 }

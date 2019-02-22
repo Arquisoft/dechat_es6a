@@ -4,10 +4,14 @@ const Core = require('../lib/core');
 const auth = require('solid-auth-client');
 const { default: data } = require('@solid/query-ldflex');
 const namespaces = require('../lib/namespaces');
+const DataSync = require('../lib/datasync');
 
 let core = new Core(auth.fetch);
 let userWebId;
+let interlocutorWebId;
 let refreshIntervalId;
+let dataSync = new DataSync(auth.fetch);
+let userDataUrl;
 
 $('.login-btn').click(() => {
   auth.popupLogin({ popupUri: 'popup.html' });
@@ -70,3 +74,21 @@ $('#new-btn').click(async () => {
     $('#login-required').modal('show');
   }
 });
+
+$('#start-new-chat-btn').click(async () => {
+  const dataUrl = $('#data-url').val();
+
+  if (await core.writePermission(dataUrl, dataSync)) {
+    $('#new-chat-options').addClass('hidden');
+    interlocutorWebId = $('#contacts').val();
+    userDataUrl = dataUrl;
+    setUpNewConversation();
+  } else {
+    $('#write-permission-url').text(dataUrl);
+    $('#write-permission').modal('show');
+  }
+});
+
+async function setUpNewConversation() {
+  //Initialize conversation
+}

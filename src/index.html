@@ -42,7 +42,6 @@
          <form>
             <div class="form-group">
                <label for="contacts">Open chat with</label>
-               		<input type="text" class="form-control rounded-0" id="contact-webid" placeholder="Enter interlocutor's WebID" value="https://name.solid.community/profile/card#me">
                <select id="contacts">
 				   
 				</select>
@@ -54,6 +53,45 @@
             <button id="start-new-chat-btn" type="button" class="btn btn-dark">Start chat</button>
             <button type="button" class="btn-cancel btn btn-dark">Cancel</button>
          </form>
+      </div>
+	  
+	  <div class="modal fade" id="login-required" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Login required</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              Please login to start a chat.
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="button" class="login-btn btn btn-dark">Login</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal fade" id="write-permission" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel2" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel2">Write permission required</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              You don't have write permission for <span id="write-permission-url"></span>.
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
       </div>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/json3/3.3.2/json3.js"></script> 
       <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script> 
