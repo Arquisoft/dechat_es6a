@@ -60,6 +60,8 @@ local.properties
 # Code Recommenders
 .recommenders/
 
-node_modules
 .DS_Store
 .idea
+
+# Node Dependencies
+node_modules
