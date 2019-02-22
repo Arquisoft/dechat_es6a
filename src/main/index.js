@@ -2,7 +2,9 @@
 
 const Core = require('../lib/core');
 const auth = require('solid-auth-client');
-const { default: data } = require('@solid/query-ldflex');
+const {
+	default: data
+} = require('@solid/query-ldflex');
 const namespaces = require('../lib/namespaces');
 const DataSync = require('../lib/datasync');
 
@@ -15,196 +17,313 @@ let userDataUrl;
 let chatsToJoin = [];
 let semanticChat;
 
+//loader
+//const {Loader} = require('semantic-chess');
+
 $('.login-btn').click(() => {
-  auth.popupLogin({ popupUri: 'popup.html' });
+	auth.popupLogin({
+		popupUri: 'popup.html'
+	});
 });
 
 $('#logout-btn').click(() => {
-  auth.logout();
+	auth.logout();
 });
 
-auth.trackSession(async session => {
-  const loggedIn = !!session;
-  //alert(`logged in: ${loggedIn}`);
-
-  if (loggedIn) {
-    $('#user-menu').removeClass('hidden');
-    $('#nav-login-btn').addClass('hidden');
-    $('#login-required').modal('hide');
-
-    userWebId = session.webId;
-    const name =await core.getFormattedName(userWebId);
-
-    if (name) {
-      $('#user-name').removeClass('hidden');
-      $('#user-name').text(name);
-    }
-
-    //checkForNotifications();
-    // refresh every 5sec
-    refreshIntervalId = setInterval(checkForNotifications, 5000);
-  } else {
-	  //alert("you're not logged in");
-    $('#nav-login-btn').removeClass('hidden');
-    $('#user-menu').addClass('hidden');
-    $('#new-chat-options').addClass('hidden');
-    userWebId = null;
-    clearInterval(refreshIntervalId);
-    refreshIntervalId = null;
-  }
-});
-
+/**
+ * This method updates the UI after a chat option has been selected by the user.
+ */
 function afterChatOption() {
   $('#chat-options').addClass('hidden');
 }
 
-$('#new-btn').click(async () => {
-  if (userWebId) {
-    afterChatOption();
-    $('#new-chat-options').removeClass('hidden');
- 	$('#data-url').prop('value', core.getDefaultDataUrl(userWebId));
+auth.trackSession(async session => {
+	const loggedIn = !!session;
+	//alert(`logged in: ${loggedIn}`);
 
-    const $select = $('#contacts');
+	if (loggedIn) {
+		$('#user-menu').removeClass('hidden');
+		$('#nav-login-btn').addClass('hidden');
+		$('#login-required').modal('hide');
 
-    for await (const friend of data[userWebId].friends) {
-        let name = await core.getFormattedName(friend.value);
+		userWebId = session.webId;
+		const name = await core.getFormattedName(userWebId);
 
-        $select.append(`<option value="${friend}">${name}</option>`);
-    }
-  } else {
-	  //alert("NOT logged in");
-    $('#login-required').modal('show');
-  }
+		if (name) {
+			$('#user-name').removeClass('hidden');
+			$('#user-name').text(name);
+		}
+
+		//checkForNotifications();
+		// refresh every 5sec
+		//refreshIntervalId = setInterval(checkForNotifications, 5000);
+	} else {
+		//alert("you're not logged in");
+		$('#nav-login-btn').removeClass('hidden');
+		$('#user-menu').addClass('hidden');
+		$('#new-chat-options').addClass('hidden');
+		$('#join-chat-options').addClass('hidden');
+		$('#continue-chat-options').addClass('hidden');
+		userWebId = null;
+		clearInterval(refreshIntervalId);
+		refreshIntervalId = null;
+	}
 });
 
-$('#start-new-chat-btn').click(async () => {
-  const dataUrl = $('#data-url').val();
 
-  if (await core.writePermission(dataUrl, dataSync)) {
-    $('#new-chat-options').addClass('hidden');
-    interlocWebId = $('#contacts').val();
-    userDataUrl = dataUrl;
-    setUpNewConversation();
-  } else {
-    $('#write-permission-url').text(dataUrl);
-    $('#write-permission').modal('show');
-  }
+$('#new-btn').click(async() => {
+	if (userWebId) {
+		afterChatOption();
+		$('#new-chat-options').removeClass('hidden');
+		$('#data-url').prop('value', core.getDefaultDataUrl(userWebId));
+
+		const $select = $('#contacts');
+
+		for await (const friend of data[userWebId].friends) {
+			let name = await core.getFormattedName(friend.value);
+
+			$select.append(`<option value="${friend}">${name}</option>`);
+		}
+	} else {
+		//alert("NOT logged in");
+		$('#login-required').modal('show');
+	}
+});
+
+$('#start-new-chat-btn').click(async() => {
+	const dataUrl = $('#data-url').val();
+
+	if (await core.writePermission(dataUrl, dataSync)) {
+		$('#new-chat-options').addClass('hidden');
+		interlocWebId = $('#contacts').val();
+		userDataUrl = dataUrl;
+		setUpNewConversation();
+	} else {
+		$('#write-permission-url').text(dataUrl);
+		$('#write-permission').modal('show');
+	}
 });
 
 async function setUpNewConversation() {
-  //Initialize conversation
+	//Initialize conversation
 }
 
-$('#join-btn').click(async () => {
-  if (userWebId) {
-    afterChatOption();
-    $('#join-chat-options').removeClass('hidden');
-    $('#join-data-url').prop('value', core.getDefaultDataUrl(userWebId));
-    $('#join-looking').addClass('hidden');
+$('#join-btn').click(async() => {
+	if (userWebId) {
+		afterChatOption();
+		$('#join-chat-options').removeClass('hidden');
+		$('#join-data-url').prop('value', core.getDefaultDataUrl(userWebId));
+		$('#join-looking').addClass('hidden');
 
-    if (chatsToJoin.length > 0) {
-      $('#join-loading').addClass('hidden');
-      $('#join-form').removeClass('hidden');
-      const $select = $('#chat-urls');
-      $select.empty();
+		if (chatsToJoin.length > 0) {
+			$('#join-loading').addClass('hidden');
+			$('#join-form').removeClass('hidden');
+			const $select = $('#chat-urls');
+			$select.empty();
 
-      chatsToJoin.forEach(game => {
-        let name = chat.name;
+			chatsToJoin.forEach(chat => {
+				let name = chat.name;
 
-        if (!name) {
-          name = chat.chatUrl;
-        }
+				if (!name) {
+					name = chat.chatUrl;
+				}
 
-        $select.append($(`<option value="${game.gameUrl}">${name} (${game.opponentsName})</option>`));
-      });
-    } else {
-      $('#no-join').removeClass('hidden');
-    }
-  } else {
-    $('#login-required').modal('show');
-  }
+				$select.append($(`<option value="${chat.chatUrl}">${name} (${chat.opponentsName})</option>`));
+			});
+		} else {
+			$('#no-join').removeClass('hidden');
+		}
+	} else {
+		$('#login-required').modal('show');
+	}
 });
 
-$('#join-chat-btn').click(async () => {
-  if ($('#join-data-url').val() !== userWebId) {
-    userDataUrl = $('#join-data-url').val();
+$('#join-chat-btn').click(async() => {
+	if ($('#join-data-url').val() !== userWebId) {
+		userDataUrl = $('#join-data-url').val();
 
-    if (await core.writePermission(userDataUrl, dataSync)){
-      $('#join-chat-options').addClass('hidden');
-      const chatUrl = $('#chat-urls').val();
+		if (await core.writePermission(userDataUrl, dataSync)) {
+			$('#join-chat-options').addClass('hidden');
+			const chatUrl = $('#chat-urls').val();
 
-      let i = 0;
+			let i = 0;
 
-      while (i < chatsToJoin.length && chatsToJoin[i].chatUrl !== chatUrl) {
-        i++;
-      }
+			while (i < chatsToJoin.length && chatsToJoin[i].chatUrl !== chatUrl) {
+				i++;
+			}
 
-      const chat = chatsToJoin[i];
+			const chat = chatsToJoin[i];
 
-      // remove it from the array so it's no longer shown in the UI
-      chatsToJoin.splice(i, 1);
+			// remove it from the array so it's no longer shown in the UI
+			chatsToJoin.splice(i, 1);
 
-      // setUpForEveryChatOption();
-      // interlocWebId = chat.interlocutorWebId;
-      // semanticChat = await core.joinExistingChat(chatUrl, chat.invitationUrl, interlocWebId, userWebId, userDataUrl, dataSync, chat.fileUrl);
+			// setUpForEveryChatOption();
+			// interlocWebId = chat.interlocutorWebId;
+			// semanticChat = await core.joinExistingChat(chatUrl, chat.invitationUrl, interlocWebId, userWebId, userDataUrl, dataSync, chat.fileUrl);
 
-        // webrtc = new WebRTC({
-          // userWebId,
-          // userInboxUrl: await core.getInboxUrl(userWebId),
-          // interlocutorWebId: interlocWebId,
-          // interlocutorWebId: await core.getInboxUrl(interlocWebId),
-          // fetch: auth.fetch,
-          // initiator: false,
-          // onNewData: rdfjsSource => {
-            // let newMessageFound = false;
+			// webrtc = new WebRTC({
+			// userWebId,
+			// userInboxUrl: await core.getInboxUrl(userWebId),
+			// interlocutorWebId: interlocWebId,
+			// interlocutorWebId: await core.getInboxUrl(interlocWebId),
+			// fetch: auth.fetch,
+			// initiator: false,
+			// onNewData: rdfjsSource => {
+			// let newMessageFound = false;
 
-            // core.checkForNewMessage(semanticChat, dataSync, userDataUrl, rdfjsSource, (san, url) => {
-              // semanticChat.loadMessage(san, {url});
-              // //semanticChat.getChat().fen()
-              // updateStatus();
-              // newMessageFound = true;
-            // });
+			// core.checkForNewMessage(semanticChat, dataSync, userDataUrl, rdfjsSource, (san, url) => {
+			// semanticChat.loadMessage(san, {url});
+			// //semanticChat.getChat().fen()
+			// updateStatus();
+			// newMessageFound = true;
+			// });
 
-            // if (!newMessageFound) {
-              // core.checkForGiveUpOfChat(semanticChat, rdfjsSource, (agentUrl, objectUrl) => {
-                // semanticChat.loadGiveUpBy(agentUrl);
-                // $('#interlocutor-quit').modal('show');
-              // });
-            // }
-          // },
-          // onCompletion: () => {
-            // $('#real-time-setup').modal('hide');
-          // },
-          // onClosed: (closedByUser) => {
-            // if (!closedByUser && !$('#interlocutor-quit').is(':visible')) {
-              // $('#interlocutor-quit').modal('show');
-            // }
-          // }
-        // });
+			// if (!newMessageFound) {
+			// core.checkForGiveUpOfChat(semanticChat, rdfjsSource, (agentUrl, objectUrl) => {
+			// semanticChat.loadGiveUpBy(agentUrl);
+			// $('#interlocutor-quit').modal('show');
+			// });
+			// }
+			// },
+			// onCompletion: () => {
+			// $('#real-time-setup').modal('hide');
+			// },
+			// onClosed: (closedByUser) => {
+			// if (!closedByUser && !$('#interlocutor-quit').is(':visible')) {
+			// $('#interlocutor-quit').modal('show');
+			// }
+			// }
+			// });
 
-        // webrtc.start();
+			// webrtc.start();
 
-        // //$('#real-time-setup .modal-body ul').append('<li>Response sent</li><li>Setting up direct connection</li>');
-        // //$('#real-time-setup').modal('show');
-      
+			// //$('#real-time-setup .modal-body ul').append('<li>Response sent</li><li>Setting up direct connection</li>');
+			// //$('#real-time-setup').modal('show');
 
-      // setUpWindow(semanticChat);
-      // setUpAfterEveryChatOptionIsSetUp();
-    } else {
-      $('#write-permission-url').text(userDataUrl);
-      $('#write-permission').modal('show');
-    }
-  } else {
-    console.warn('We are pretty sure you do not want to remove your WebID.');
-  }
+
+			// setUpWindow(semanticChat);
+			// setUpAfterEveryChatOptionIsSetUp();
+		} else {
+			$('#write-permission-url').text(userDataUrl);
+			$('#write-permission').modal('show');
+		}
+	} else {
+		console.warn('We are pretty sure you do not want to remove your WebID.');
+	}
+});
+
+
+/**
+ * This method does the necessary updates of the UI when the different chat options are shown.
+ */
+function setUpForEveryChatOption() {
+  $('#chat-loading').removeClass('hidden');
+}
+
+
+/**
+ * This method lets a player continue an existing chess chat.
+ * @param chatUrl: the url of the chat to continue.
+ * @returns {Promise<void>}
+ */
+async function continueExistingChat(chatUrl) {
+	setUpForEveryChatOption();
+	
+	//No Existing loader!!!
+	//const loader = new Loader(auth.fetch);
+	//semanticChat = await loader.loadFromUrl(chatUrl, userWebId, userDataUrl);
+	//interlocWebId = semanticChat.getOpponentWebId();
+
+	setUpNewConversation();
+}
+
+
+$('#continue-btn').click(async() => {
+	if (userWebId) {
+		afterChatOption();
+
+		const $tbody = $('#continue-chat-table tbody');
+		$tbody.empty();
+		$('#continue-chat-options').removeClass('hidden');
+
+		const chats = await core.getChatsToContinue(userWebId);
+
+		$('#continue-looking').addClass('hidden');
+
+		if (chats.length > 0) {
+			$('#continue-loading').addClass('hidden');
+			$('#continue-chats').removeClass('hidden');
+
+			chats.forEach(async chat => {
+				let name = await core.getObjectFromPredicateForResource(chat.chatUrl, namespaces.schema + 'name');
+
+/*				if (!name) {
+					name  chat.chatUrl;
+				} else {
+					name = name.value;
+				}
+*/
+				
+				//NO EXISTING LOADER !!
+				
+				//const loader = new Loader(auth.fetch);
+				//const friendWebId = await loader.findWebIdOfOpponent(chat.chatUrl, userWebId);
+				//const friendName = await core.getFormattedName(friendWebId);
+				
+				// <td>${name}</td>
+				const $row = $(`
+          <tr data-chat-url="${chat.chatUrl}" class='clickable-row'>
+           	
+            <td>${friendName}</td>
+          </tr>`);
+
+				$row.click(function () {
+					$('#continue-chat-options').addClass('hidden');
+					const selectedChat = $(this).data('chat-url');
+
+					let i = 0;
+
+					while (i < chats.length && chats[i].chatUrl !== selectedChat) {
+						i++;
+					}
+
+					userDataUrl = chats[i].storeUrl;
+
+					continueExistingChat(selectedChat);
+				});
+
+				$tbody.append($row);
+			});
+		} else {
+			$('#no-continue').removeClass('hidden');
+		}
+	} else {
+		$('#login-required').modal('show');
+	}
+});
+
+$('#continue-chat-btn').click(async() => {
+	$('#continue-chat-options').addClass('hidden');
+	const chats = await core.getChatsToContinue(userWebId);
+	const selectedConvo = $('#continue-chat-urls').val();
+	let i = 0;
+
+	while (i < chats.length && chats[i].chatUrl !== selectedConvo) {
+		i++;
+	}
+
+	userDataUrl = chats[i].storeUrl;
+
+	continueExistingChat(selectedConvo);
 });
 
 $('.btn-cancel').click(() => {
-  interlocWebId = null;
+	interlocWebId = null;
 
-  $('#chat').addClass('hidden');
-  $('#new-chat-options').addClass('hidden');
-  $('#join-chat-options').addClass('hidden');
-  $('#continue-chat-options').addClass('hidden');
-  $('#chat-options').removeClass('hidden');
+	$('#chat').addClass('hidden');
+	$('#new-chat-options').addClass('hidden');
+	$('#join-chat-options').addClass('hidden');
+	$('#continue-chat-options').addClass('hidden');
+	$('#chat-options').removeClass('hidden');
 });
+
