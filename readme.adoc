@@ -14,6 +14,8 @@ Othmane Bakhtaoui
 
 Mª Isabel Fernández Pérez
 
+Álvaro González Carracedo
+
 == Build documentation
 
 The documentation is done in http://asciidoc.org/[AsciiDoc]
