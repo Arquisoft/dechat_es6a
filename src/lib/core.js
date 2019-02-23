@@ -170,6 +170,84 @@ class DeChatCore {
 
 		return deferred.promise;
 	}
+	
+	async setUpNewChat(userDataUrl, userWebId, interlocutorWebId, dataSync) {
+    const chatUrl = await this.generateUniqueUrlForResource(userDataUrl);
+    const semanticChat = new SemanticChat({
+      url: chatUrl,
+      messageBaseUrl: userDataUrl,
+      userWebId,
+      interlocutorWebId
+    });
+    const invitation = await this.generateInvitation(userDataUrl, semanticChat.getUrl(), userWebId, interlocutorWebId);
+
+    try {
+      await dataSync.executeSPARQLUpdateForUser(userDataUrl, `INSERT DATA {${semanticChat.getMinimumRDF()} \n <${chatUrl}> <${namespaces.storage}storeIn> <${userDataUrl}>}`);
+    } catch (e) {
+      this.logger.error(`Could not save new chat data.`);
+      this.logger.error(e);
+    }
+
+    try {
+      await dataSync.executeSPARQLUpdateForUser(userWebId, `INSERT DATA { <${chatUrl}> <${namespaces.schema}contributor> <${userWebId}>; <${namespaces.storage}storeIn> <${userDataUrl}>.}`);
+    } catch (e) {
+      this.logger.error(`Could not add chat to WebId.`);
+      this.logger.error(e);
+    }
+
+    try {
+      await dataSync.executeSPARQLUpdateForUser(userDataUrl, `INSERT DATA {${invitation.sparqlUpdate}}`);
+    } catch (e) {
+      this.logger.error(`Could not save invitation for game.`);
+      this.logger.error(e);
+    }
+
+    try {
+      await dataSync.sendToInterlocutorInbox(await this.getInboxUrl(interlocutorWebId), invitation.notification);
+    } catch (e) {
+      this.logger.error(`Could not send invitation to interlocutor.`);
+      this.logger.error(e);
+    }
+
+    return semanticChat;
+  }
+  
+   async generateUniqueUrlForResource(baseurl) {
+    let url = baseurl + '#' + uniqid();
+
+    try {
+      let d = this.getObjectFromPredicateForResource(url, namespaces.rdf + 'type');
+
+      // We assume that if this url doesn't have a type, the url is unused.
+      // Ok, this is not the most fail-safe thing.
+      // TODO: check if there are any triples at all.
+      while (d) {
+        url = baseurl + '#' + uniqid();
+        d = await this.getObjectFromPredicateForResource(url, namespaces.rdf + 'type');
+      }
+    } catch (e) {
+      // this means that response of data[url] returns a 404
+      // TODO might be called when you have no access, should check
+    } finally {
+      return url;
+    }
+  }
+  
+   async generateInvitation(baseUrl, chatUrl, userWebId, interlocutorWebId) {
+    const invitationUrl = await this.generateUniqueUrlForResource(baseUrl);
+    const notification = `<${invitationUrl}> a <${namespaces.schema}InviteAction>.`;
+    const sparqlUpdate = `
+    <${invitationUrl}> a <${namespaces.schema}InviteAction>;
+      <${namespaces.schema}event> <${chatUrl}>;
+      <${namespaces.schema}agent> <${userWebId}>;
+      <${namespaces.schema}recipient> <${interlocutorWebId}>.
+  `;
+
+    return {
+      notification,
+      sparqlUpdate
+    };
+  }
 
 
 

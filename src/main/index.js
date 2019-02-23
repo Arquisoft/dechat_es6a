@@ -106,6 +106,9 @@ $('#start-new-chat-btn').click(async() => {
 
 async function setUpNewConversation() {
 	//Initialize conversation
+	setUpForEveryChatOption();
+	
+	semanticChat = await core.setUpNewChat(userDataUrl, userWebId, interlocWebId, dataSync);
 }
 
 $('#join-btn').click(async() => {
