@@ -59,7 +59,7 @@ class DataSync {
    * @param data: the RDF data representing the notification.
    * @returns {Promise}: the promise from auth.fetch().
    */
-  sendToOpponentsInbox(url, data) {
+  sendToInterlocutorInbox(url, data) {
     return this.fetch(url, {
       method: 'POST',
       body: data

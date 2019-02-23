@@ -9,6 +9,7 @@ const {
 	format
 } = require('date-fns');
 const rdfjsSourceFromUrl = require('./rdfjssourcefactory').fromUrl;
+const SemanticChat = require('./semanticchat');
 
 class DeChatCore {
 
@@ -182,7 +183,7 @@ class DeChatCore {
     const invitation = await this.generateInvitation(userDataUrl, semanticChat.getUrl(), userWebId, interlocutorWebId);
 
     try {
-      await dataSync.executeSPARQLUpdateForUser(userDataUrl, `INSERT DATA {${semanticChat.getMinimumRDF()} \n <${chatUrl}> <${namespaces.storage}storeIn> <${userDataUrl}>}`);
+      await dataSync.executeSPARQLUpdateForUser(userDataUrl, `INSERT DATA {${semanticChat.getMinimumInfo()} \n <${chatUrl}> <${namespaces.storage}storeIn> <${userDataUrl}>}`);
     } catch (e) {
       this.logger.error(`Could not save new chat data.`);
       this.logger.error(e);
@@ -247,6 +248,14 @@ class DeChatCore {
       notification,
       sparqlUpdate
     };
+  }
+  
+    async getInboxUrl(webId) {
+    if (!this.inboxUrls[webId]) {
+      this.inboxUrls[webId] = (await this.getObjectFromPredicateForResource(webId, namespaces.ldp + 'inbox')).value;
+    }
+
+    return this.inboxUrls[webId];
   }
 
 
