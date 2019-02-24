@@ -1,0 +1,10 @@
+<div ng-switch on="info.type">
+    <div class="system-notification" ng-switch-when="welcome"><strong>:&nbsp;&nbsp;</strong><span>{{info.text}}</span>
+    </div>
+    <div class="system-notification" ng-switch-when="bye"><strong>:&nbsp;&nbsp;</strong>byebye,
+        <span>{{info.text}}</span></div>
+    <div class="normal-message" ng-class="{others:self!==info.from,self:self===info.from}" ng-switch-when="normal">
+        <div class="name-wrapper"><span>{{info.from}} @ </span><span>{{time |  date: 'HH:mm:ss' }}</span></div>
+        <div class="content-wrapper"><span class="content">{{info.text}}</span><span class="avatar"></span></div>
+    </div>
+</div>
