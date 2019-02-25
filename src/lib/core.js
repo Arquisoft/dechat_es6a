@@ -257,6 +257,26 @@ class DeChatCore {
 
     return this.inboxUrls[webId];
   }
+  
+  async storeMessage(userDataUrl, username, userWebId, time, message, dataSync) {
+	  
+	  const messageUrl = await this.generateUniqueUrlForResource(userWebId);
+		const sparqlUpdate = `
+		<${messageUrl}> a <${namespaces.schema}Message>;
+		  <${namespaces.schema}text> <${message}>.
+	  `;
+	  //<${namespaces.schema}author> <${username}>;
+	  //<${namespaces.schema}dateCreated> <${time}>;
+    
+
+    try {
+      await dataSync.executeSPARQLUpdateForUser(userDataUrl, `INSERT DATA {${sparqlUpdate}}`);
+    } catch (e) {
+      this.logger.error(`Could not save new message.`);
+      this.logger.error(e);
+    }
+
+  }
 
 
 

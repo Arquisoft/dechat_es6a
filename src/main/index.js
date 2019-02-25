@@ -344,8 +344,14 @@ async function setUpChat() {
 
 }
 
-$('#write-chat').click(() => {
+$('#write-chat').click(async() => {
 	var d = new Date();
-	$("#messagesarea").val($("#messagesarea").val() + "\n" + $('#user-name').text() + " [" + d.getHours() + ":" + d.getMinutes() +"] > " + $("#message").val());
+	var options = {year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' };
+	const username =  $('#user-name').text();
+	const message = $("#message").val();
+	
+	$("#messagesarea").val($("#messagesarea").val() + "\n" + username + " [" + d.toLocaleDateString("en-US", options) + "]> " + message);
+	await core.storeMessage(userDataUrl, username, userWebId, d, message, dataSync);
+	
 });
 
