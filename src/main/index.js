@@ -109,6 +109,8 @@ async function setUpNewConversation() {
 	setUpForEveryChatOption();
 	
 	semanticChat = await core.setUpNewChat(userDataUrl, userWebId, interlocWebId, dataSync);
+	
+	setUpChat();
 }
 
 $('#join-btn').click(async() => {
@@ -328,5 +330,22 @@ $('.btn-cancel').click(() => {
 	$('#join-chat-options').addClass('hidden');
 	$('#continue-chat-options').addClass('hidden');
 	$('#chat-options').removeClass('hidden');
+});
+
+async function setUpChat() {
+  //const chat = semanticChat.getChat();
+
+  $('#chat').removeClass('hidden');
+  $('#chat-loading').addClass('hidden');
+
+  const intName = await core.getFormattedName(interlocWebId);
+
+  $('#interlocutor-name').text(intName);
+
+}
+
+$('#write-chat').click(() => {
+	var d = new Date();
+	$("#messagesarea").val($("#messagesarea").val() + "\n" + $('#user-name').text() + " [" + d.getHours() + ":" + d.getMinutes() +"] > " + $("#message").val());
 });
 

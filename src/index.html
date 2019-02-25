@@ -99,6 +99,19 @@
       <!--Loading-->
       <div id="chat-loading" class="hidden"> <span>Loading your conversation...</span> </div>
 	   <!--END Loading-->
+	   
+	   <div id="chat" class="hidden" >
+          <p>Talking to <span id="interlocutor-name"></span></p>
+          <div id="messages" style="width: 400px">
+			 <textarea id="messagesarea" rows="10" cols="50">
+			 Chat initialised. Awaiting interlocutor.</textarea> 
+		  </div>
+		  <input type="text" class="form-control rounded-0" id="message" placeholder="Write a message:">
+		  <button id="write-chat" type="button" class="btn btn-dark">Send</button>
+          <button id="leave-chat" type="button" class="btn btn-dark">Leave</button>
+        </div>
+      </div>
+	  
       <div class="modal fade" id="login-required" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
          <div class="modal-dialog" role="document">
             <div class="modal-content">
