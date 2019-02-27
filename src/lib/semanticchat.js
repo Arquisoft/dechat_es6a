@@ -8,6 +8,7 @@ class SemanticChat {
     this.userWebId = options.userWebId;
     this.interlocutorWebId = options.interlocutorWebId;
     this.messageBaseUrl = options.messageBaseUrl;
+	this.messages = [];
 
     // if move base url is a string create function that returns this string
     // else a function so we leave it
@@ -30,7 +31,7 @@ class SemanticChat {
   
   /**
    * This method must return a representation of the chat at its initial stage.
-   * @returns {string}: Representation of the game
+   * @returns {string}: Representation of the chat
    */
   getMinimumInfo() {
 	  
@@ -42,7 +43,20 @@ class SemanticChat {
   getUrl() {
     return this.url;
   }
+  
+  loadMessage(messagetext, options) {
+
+      this.lastMessage = {url: options.url, messagetext};
+	  
+	  messages.push(lastMessage);
+
+      return this.lastMessage;
+  }
 	
+	
+	getMessages() {
+		return messages;
+	}
 	
 	
 }

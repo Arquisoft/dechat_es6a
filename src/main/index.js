@@ -54,9 +54,9 @@ auth.trackSession(async session => {
 			$('#user-name').text(name);
 		}
 
-		//checkForNotifications();
+		checkForNotifications();
 		// refresh every 5sec
-		//refreshIntervalId = setInterval(checkForNotifications, 5000);
+		refreshIntervalId = setInterval(checkForNotifications, 5000);
 	} else {
 		//alert("you're not logged in");
 		$('#nav-login-btn').removeClass('hidden');
@@ -370,21 +370,16 @@ $('#write-chat').click(async() => {
 async function checkForNotifications() {
 	console.log('Checking for new notifications');
 
-	const updates = await core.checkUserInboxForUpdates(await core.getInboxUrl(userWebId));
+	const updates = await core.checkUserInboxForUpdates(await core.getInboxUrl(userWebId));		//HECHO
 
 	updates.forEach(async(fileurl) => {
 		let newChatFound = false;
-		// check for new conversations
-		await core.checkForNewChat(semanticChat, userWebId, fileurl, userDataUrl, dataSync, (san, url) => {
-			//TODO : no existing semanticChat
-			semanticChat.loadMove(san, {
-				url
-			});
-			//board.position(semanticGame.getChess().fen());
-			updateStatus();
-			newChatFound = true;
-		});
-
+		// check for new 
+		
+		//Asignar a variable
+		await core.checkForNewMessage(semanticChat, userWebId, fileurl, userDataUrl, dataSync);
+		
+		
 		if (!newChatFound) {
 			// check for acceptances of invitations
 			const response = await core.getResponseToInvitation(fileurl);
@@ -412,13 +407,13 @@ async function processResponseInNotification(response, fileurl) {
 	const rsvpResponse = await core.getObjectFromPredicateForResource(response.responseUrl, namespaces.schema + 'rsvpResponse');
 	let chatUrl = await core.getObjectFromPredicateForResource(response.invitationUrl, namespaces.schema + 'event');
 
-	if (gameUrl) {
+	if (chatUrl) {
 		chatUrl = chatUrl.value;
 
 		//real time  
-		if (semanticChat && semanticChat.getUrl() === chatUrl && semanticChat.isRealTime()) {
+		if (semanticChat && semanticChat.getUrl() === chatUrl) {
 			if (rsvpResponse.value === namespaces.schema + 'RsvpResponseYes') {
-				$('#real-time-setup .modal-body ul').append('<li>Invitation accepted</li><li>Setting up direct connection</li>');
+				//$('#real-time-setup .modal-body ul').append('<li>Invitation accepted</li><li>Setting up direct connection</li>');
 				webrtc.start();
 			}
 		}

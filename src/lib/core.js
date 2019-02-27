@@ -331,17 +331,17 @@ class DeChatCore {
 	 * @param callback: the function with as parameters the san and url of the next move that is called at the end of this method
 	 * @returns {Promise<void>}
 	 */
-	async checkForNewChat(semanticChat = null, userWebId, fileurl, userDataUrl, dataSync, callback) {
+	async checkForNewMessage(semanticChat = null, userWebId, fileurl, userDataUrl, dataSync, callback) {
 
 		//TODO adapt this
-		const originalConvo = await this.getOriginalHalfMove(fileurl);
+		const originalData = await this.getInitialMessages(fileurl);
 
-		if (originalConvo) {
-			let chatUrl = await this.getObjectFromPredicateForResource(originalConvo, namespaces.schema + 'subEvent');
+		if (originalData) {
+			let chatUrl = await this.getObjectFromPredicateForResource(originalData, namespaces.schema + 'subEvent');
 
 			if (!chatUrl) {
 
-				chatUrl = await this.getChatOfMessage(originalConvo);
+				chatUrl = await this.getChatOfMessage(originalData);
 
 				if (chatUrl) {
 					console.error('DeChat: found by using Comunica directly, but not when using LDflex. Caching issue (reported).');
@@ -351,7 +351,6 @@ class DeChatCore {
 			if (chatUrl) {
 				chatUrl = chatUrl.value;
 
-				//CHANGE THIS, No existing semanticChat
 				let chat = semanticChat;
 
 
@@ -363,8 +362,7 @@ class DeChatCore {
 					if (chatStorageUrl) {
 						const loader = new Loader(this.fetch);
 
-						//TODO No existing Loader
-						chat = await loader.loadFromUrl(chatUrl, userWebId, chatStorageUrl);
+						chat = await loader.loadFromUrl(chatUrl, userWebId, chatStorageUrl);	//Aquí se hallan los mensajes cargados
 
 					} else {
 						this.logger.debug(`No storage location is found for chat "${chatUrl}". Ignoring notification in ${fileurl}.`);
@@ -372,74 +370,20 @@ class DeChatCore {
 				} else {
 					chatStorageUrl = userDataUrl;
 				}
+				
+				//Mostrar mensajes cargados en ventana chat.
+				//Quizá devolver a index.js y que se realice alli sea más adecuado.
 
+				
 
-				//TODO: change the chat
-				if (chat && chat.isOpponentsTurn() && !chat.isRealTime()) {
-
-					//TODO
-					const lastMoveUrl = chat.getLastMove();
-					let nextChatUrl;
-					let endschat = false;
-
-					if (lastMoveUrl) {
-						//TODO
-						const r = await this.getNextHalfMoveFromUrl(fileurl, lastMoveUrl.url, chat.getUrl());
-						nextChatUrl = r.move;
-						endschat = r.endschat;
-					} else {
-						//TODO
-						nextChatUrl = await this.getFirstHalfMoveFromUrl(fileurl, chat.getUrl());
-					}
-
-					//TODO: CHANGE namespaces.chess
-					if (nextChatUrl) {
-						this.logger.debug(nextChatUrl);
-						dataSync.deleteFileForUser(fileurl);
-						//TODO ???
-						if (lastMoveUrl) {
-							let update = `INSERT DATA {
-              <${lastMoveUrl.url}> <${namespaces.chess}nextHalfMove> <${nextChatUrl}>.
-            `;
-							//TODO namespaces.????
-							if (endschat) {
-								update += `<${chat.getUrl()}> <${namespaces.chess}hasLastHalfMove> <${nextChatUrl}>.`;
-							}
-
-							update += '}';
-
-							dataSync.executeSPARQLUpdateForUser(chatStorageUrl, update);
-						} else {
-							dataSync.executeSPARQLUpdateForUser(chatStorageUrl, `INSERT DATA {
-              <${chat.getUrl()}> <${namespaces.chess}hasFirstHalfMove> <${nextChatUrl}>.
-            }`);
-						}
-
-						if (semanticChat && chat.getUrl() === semanticchat.getUrl()) {
-							let san = await this.getObjectFromPredicateForResource(nextChatUrl, namespaces.chess + 'hasSANRecord');
-
-							if (!san) {
-								san = await this.getSANRecord(nextChatUrl);
-
-								if (san) {
-									console.error('san: found by using Comunica directly, but not when using LDflex. Caching issue (reported).');
-								}
-							}
-
-							if (san) {
-								callback(san.value, nextChatUrl);
-							} else {
-								console.error(`The move with url "${nextChatUrl}" does not have a SAN record defined.`);
-							}
-						}
-					}
-				}
-			} else {
-				this.logger.warn(`No chat was found for the notification about the conversation "${originalConvo}". Ignoring notification in ${fileurl}.`);
-				//TODO throw error
-			}
+				//Subir mensajes al POD de este otro usuario. Todo lo demás no nos es relevante	
+				//dataSync.executeSPARQLUpdateForUser(chatStorageUrl, update);
+				
+				return chat.getMessages();
+				
+			
 		}
-	}
+	}}
 
 	/**
 	 * This method returns the chat to which a message belongs.
@@ -490,7 +434,7 @@ class DeChatCore {
 	 * @param fileurl: the url of the file in which to look.
 	 * @returns {Promise<string|null>}: a promise that resolves with the url of the move or null if none is found.
 	 */
-	async getOriginalHalfMove(fileurl) {
+	async getInitialMessages(fileurl) {
 		const deferred = Q.defer();
 		const rdfjsSource = await rdfjsSourceFromUrl(fileurl, this.fetch);
 
