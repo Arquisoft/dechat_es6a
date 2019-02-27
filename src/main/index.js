@@ -7,6 +7,8 @@ const {
 } = require('@solid/query-ldflex');
 const namespaces = require('../lib/namespaces');
 const DataSync = require('../lib/datasync');
+const Loader = require('../lib/loader');
+
 
 let core = new Core(auth.fetch);
 let userWebId;
@@ -16,9 +18,6 @@ let dataSync = new DataSync(auth.fetch);
 let userDataUrl;
 let chatsToJoin = [];
 let semanticChat;
-
-//loader
-//const {Loader} = require('semantic-chess');
 
 $('.login-btn').click(() => {
 	auth.popupLogin({
@@ -133,7 +132,7 @@ $('#join-btn').click(async() => {
 					name = chat.chatUrl;
 				}
 
-				$select.append($(`<option value="${chat.chatUrl}">${name} (${chat.opponentsName})</option>`));
+				$select.append($(`<option value="${chat.chatUrl}">${name} ${chat.interlocutorName}</option>`));
 			});
 		} else {
 			$('#no-join').removeClass('hidden');
@@ -162,51 +161,10 @@ $('#join-chat-btn').click(async() => {
 			// remove it from the array so it's no longer shown in the UI
 			chatsToJoin.splice(i, 1);
 
-			// setUpForEveryChatOption();
-			// interlocWebId = chat.interlocutorWebId;
-			// semanticChat = await core.joinExistingChat(chatUrl, chat.invitationUrl, interlocWebId, userWebId, userDataUrl, dataSync, chat.fileUrl);
+			 setUpForEveryChatOption();
+			 interlocWebId = chat.interlocutorWebId;
+			 semanticChat = await core.joinExistingChat(chatUrl, chat.invitationUrl, interlocWebId, userWebId, userDataUrl, dataSync, chat.fileUrl);
 
-			// webrtc = new WebRTC({
-			// userWebId,
-			// userInboxUrl: await core.getInboxUrl(userWebId),
-			// interlocutorWebId: interlocWebId,
-			// interlocutorWebId: await core.getInboxUrl(interlocWebId),
-			// fetch: auth.fetch,
-			// initiator: false,
-			// onNewData: rdfjsSource => {
-			// let newMessageFound = false;
-
-			// core.checkForNewMessage(semanticChat, dataSync, userDataUrl, rdfjsSource, (san, url) => {
-			// semanticChat.loadMessage(san, {url});
-			// //semanticChat.getChat().fen()
-			// updateStatus();
-			// newMessageFound = true;
-			// });
-
-			// if (!newMessageFound) {
-			// core.checkForGiveUpOfChat(semanticChat, rdfjsSource, (agentUrl, objectUrl) => {
-			// semanticChat.loadGiveUpBy(agentUrl);
-			// $('#interlocutor-quit').modal('show');
-			// });
-			// }
-			// },
-			// onCompletion: () => {
-			// $('#real-time-setup').modal('hide');
-			// },
-			// onClosed: (closedByUser) => {
-			// if (!closedByUser && !$('#interlocutor-quit').is(':visible')) {
-			// $('#interlocutor-quit').modal('show');
-			// }
-			// }
-			// });
-
-			// webrtc.start();
-
-			// //$('#real-time-setup .modal-body ul').append('<li>Response sent</li><li>Setting up direct connection</li>');
-			// //$('#real-time-setup').modal('show');
-
-
-			// setUpWindow(semanticChat);
 			// setUpAfterEveryChatOptionIsSetUp();
 		} else {
 			$('#write-permission-url').text(userDataUrl);
@@ -376,20 +334,22 @@ async function checkForNotifications() {
 		let newChatFound = false;
 		// check for new 
 		
-		//Asignar a variable
-		await core.checkForNewMessage(semanticChat, userWebId, fileurl, userDataUrl, dataSync);
+		//No se guardan mensajes en la inbox, asi que esto no hace nada por ahora
+		//const messages = await core.checkForNewMessage(semanticChat, userWebId, fileurl, userDataUrl, dataSync);
+		//if(messages) 
+		//	newChatFound = true;
+		
 		
 		
 		if (!newChatFound) {
-			// check for acceptances of invitations
 			const response = await core.getResponseToInvitation(fileurl);
 			if (response) {
 				this.processResponseInNotification(response, fileurl);
 			} else {
-				// check for games to join
 				const convoToJoin = await core.getJoinRequest(fileurl, userWebId);
 
 				if (convoToJoin) {
+					console.log("Push");
 					chatsToJoin.push(await core.processChatToJoin(convoToJoin, fileurl));
 				}
 			}
@@ -409,22 +369,19 @@ async function processResponseInNotification(response, fileurl) {
 
 	if (chatUrl) {
 		chatUrl = chatUrl.value;
-
-		//real time  
+		
 		if (semanticChat && semanticChat.getUrl() === chatUrl) {
 			if (rsvpResponse.value === namespaces.schema + 'RsvpResponseYes') {
 				//$('#real-time-setup .modal-body ul').append('<li>Invitation accepted</li><li>Setting up direct connection</li>');
 				webrtc.start();
 			}
 		}
-		//no real time.
 		else {
 			let convoName = await core.getObjectFromPredicateForResource(chatUrl, namespaces.schema + 'name');
 
-			//NO LOADER Available
-			//const loader = new Loader(auth.fetch);
+			const loader = new Loader(auth.fetch);
 
-			const friendWebId = await loader.findWebIdOfOpponent(chatUrl, userWebId);
+			const friendWebId = await loader.findWebIdOfInterlocutor(chatUrl, userWebId);
 			const friendsName = await core.getFormattedName(friendWebId);
 
 			//show response in UI

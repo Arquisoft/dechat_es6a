@@ -72,32 +72,7 @@ class Loader {
 
     return deferred.promise;
   }
-  
-  async findWebIdOfInterlocutor(gameUrl, userWebId) {
-        const deferred = Q.defer();
-
-        const rdfjsSource = await this._getRDFjsSourceFromUrl(gameUrl);
-
-        this.engine.query(`SELECT ?id { ?agentRole <${namespaces.rdf}type> ?playerRole;
-                   <${namespaces.chess}performedBy> ?id.
-                MINUS {?playerRole <${namespaces.chess}performedBy> <${userWebId}> .}} LIMIT 100`,
-            {sources: [{type: 'rdfjsSource', value: rdfjsSource}]})
-            .then(function (result) {
-                result.bindingsStream.on('data', function (data) {
-                    const id = data.toObject()['?id'].value;
-
-                    if (id !== userWebId) {
-                        deferred.resolve(id);
-                    }
-                });
-
-                result.bindingsStream.on('end', function () {
-                    deferred.resolve(null);
-                });
-            });
-
-        return deferred.promise;
-    }
+ 
 	
 	async _getObjectFromPredicateForResource(url, predicate) {
     const deferred = Q.defer();

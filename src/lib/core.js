@@ -10,6 +10,7 @@ const {
 } = require('date-fns');
 const rdfjsSourceFromUrl = require('./rdfjssourcefactory').fromUrl;
 const SemanticChat = require('./semanticchat');
+const Loader = require('./loader');
 
 class DeChatCore {
 
@@ -292,6 +293,7 @@ class DeChatCore {
 		const rdfjsSource = await rdfjsSourceFromUrl(inboxUrl, this.fetch);
 		const self = this;
 		const engine = newEngine();
+		//console.log(this.alreadyCheckedResources);
 
 		engine.query(`SELECT ?resource {
       ?resource a <http://www.w3.org/ns/ldp#Resource>.
@@ -304,9 +306,9 @@ class DeChatCore {
 			.then(function (result) {
 				result.bindingsStream.on('data', data => {
 					data = data.toObject();
-
+					
 					const resource = data['?resource'].value;
-
+					//console.log(resource);
 					if (self.alreadyCheckedResources.indexOf(resource) === -1) {
 						newResources.push(resource);
 						self.alreadyCheckedResources.push(resource);
@@ -335,6 +337,8 @@ class DeChatCore {
 
 		//TODO adapt this
 		const originalData = await this.getInitialMessages(fileurl);
+		let chat = null;
+		
 
 		if (originalData) {
 			let chatUrl = await this.getObjectFromPredicateForResource(originalData, namespaces.schema + 'subEvent');
@@ -351,7 +355,7 @@ class DeChatCore {
 			if (chatUrl) {
 				chatUrl = chatUrl.value;
 
-				let chat = semanticChat;
+				chat = semanticChat;
 
 
 				let chatStorageUrl;
@@ -379,34 +383,36 @@ class DeChatCore {
 				//Subir mensajes al POD de este otro usuario. Todo lo demás no nos es relevante	
 				//dataSync.executeSPARQLUpdateForUser(chatStorageUrl, update);
 				
-				return chat.getMessages();
+				
 				
 			
 		}
-	}}
+	}
+	return chat.getMessages();
+	}
 
 	/**
 	 * This method returns the chat to which a message belongs.
 	 * @param moveUrl: the url of the move.
-	 * @returns {Promise}: a promise that returns the url of the game (NamedNode) or null if none is found.
+	 * @returns {Promise}: a promise that returns the url of the chat (NamedNode) or null if none is found.
 	 */
 	async getChatOfMessage(moveUrl) {
 		return this.getObjectFromPredicateForResource(moveUrl, namespaces.schema + 'subEvent');
 	}
 
 	/**
-	 * This method returns the url of the file where to store the data of the game.
+	 * This method returns the url of the file where to store the data of the chat.
 	 * @param fileurl: the url of the file in which to look for the storage details.
-	 * @param gameUrl: the url of the game for which we want to the storage details.
+	 * @param chatUrl: the url of the chat for which we want to the storage details.
 	 * @returns {Promise<string|null>}: a promise that resolves with the url of the file or null if none is found.
 	 */
-	async getStorageForChat(fileurl, gameUrl) {
+	async getStorageForChat(fileurl, chatUrl) {
 		const deferred = Q.defer();
 		const rdfjsSource = await rdfjsSourceFromUrl(fileurl, this.fetch);
 		const engine = newEngine();
 
 		engine.query(`SELECT ?url {
-     <${gameUrl}> <${namespaces.schema}contributor> <${fileurl}>;
+     <${chatUrl}> <${namespaces.schema}contributor> <${fileurl}>;
         <${namespaces.storage}storeIn> ?url.
   }`, {
 				sources: [{
@@ -442,10 +448,8 @@ class DeChatCore {
 			const engine = newEngine();
 
 			//TODO: CHANGE THE NAMESPACES
-
-			engine.query(`SELECT ?convo {
-    OPTIONAL {?convo <${namespaces.chess}nextHalfMove> ?nextMove.}
-    OPTIONAL {?chat <${namespaces.chess}hasFirstHalfMove> ?convo.}
+			engine.query(`SELECT * {
+    ?message <${namespaces.schema}text> ?msgtext.
   }`, {
 					sources: [{
 						type: 'rdfjsSource',
@@ -453,14 +457,15 @@ class DeChatCore {
 					}]
 				})
 				.then(function (result) {
-					result.bindingsStream.on('data', function (data) {
+					console.log(result);
+					result.bindingsStream.on('data', async function (data) {
 						data = data.toObject();
-
-						if (data['?convo']) {
-							deferred.resolve(data['?convo'].value);
-						} else {
-							deferred.resolve(null);
-						}
+						
+						const messageUrl = data['?message'].value;
+						const messageTxt = data['?msgtext'].value;
+						let msgText = await self.getObjectFromPredicateForResource(messageUrl, namespaces.schema + 'text');
+						deferred.resolve(msgText);
+						console.log(msgText);
 					});
 
 					result.bindingsStream.on('end', function () {
@@ -554,8 +559,8 @@ class DeChatCore {
 	 * This method checks a file and looks for the a join request.
 	 * @param fileurl: the url of the file in which to look.
 	 * @param userWebId: the WebId of the user looking for requests.
-	 * @returns {Promise}: a promise that resolves with {opponentWebId: string, gchatrl: string, invitationUrl: string},
-	 * where opponentWebId is the WebId of the player that initiated the request, gchatrl is the url of the gchat and
+	 * @returns {Promise}: a promise that resolves with {interlocutorWebId: string, gchatrl: string, invitationUrl: string},
+	 * where interlocutorWebId is the WebId of the player that initiated the request, gchatrl is the url of the gchat and
 	 * invitationUrl is the url of the invitation.
 	 * If no request was found, null is returned.
 	 */
@@ -577,14 +582,15 @@ class DeChatCore {
 					}]
 				})
 				.then(function (result) {
-					result.bindchatStream.on('data', async function (result) {
+					console.log("Result");
+					result.bindingsStream.on('data', async function (result) {
 						invitationFound = true;
-						result = rechat.toObject();
-						const inchattionUrl = result['?invitation'].value;
-						let chatUrl = await self.getObjectFromPredicateForResource(invitationUrl, namespaces.schema + 'event');
-
+						result = result.toObject();
+						const invitationUrl = result['?invitation'].value;
+						console.log("InvitationURL: " + invitationUrl);
+						let chatUrl = invitationUrl.split("#")[0];
 						if (!chatUrl) {
-							chatUrl = await self.getchatFromInvitation(invitationUrl);
+							chatUrl = await self.getChatFromInvitation(invitationUrl);
 
 							if (chatUrl) {
 								self.logger.info('chat: found by using Comunica directly, but not when using LDflex. Caching issue (reported).');
@@ -594,30 +600,15 @@ class DeChatCore {
 						if (!chatUrl) {
 							deferred.resolve(null);
 						} else {
-							chatUrl = chatUrl.value;
-
-							const types = await self.getAllObjectsFromPredicateForResource(chatUrl, namespaces.rdf + 'type');
-
-							let i = 0;
-
-							//TODO : check if 'dechat' is correct or not
-							while (i < types.length && types[i].value !== namespaces.chess + 'dechat') {
-								i++
-							}
-
-							if (i === types.length) {
-								deferred.resolve(null);
-							}
-
+							console.log("ChatURL: " + chatUrl);
 							const recipient = await self.getObjectFromPredicateForResource(invitationUrl, namespaces.schema + 'recipient');
-
+							console.log("Recipient: " + recipient);
 							if (!recipient || recipient.value !== userWebId) {
 								deferred.resolve(null);
 							}
 
-							//TODO: no loader
-							const loader = new Loader(self.fetch);
-							const friendWebId = await loader.findWebIdOfOpponent(chatUrl, userWebId);
+							const friendWebId = await self.getObjectFromPredicateForResource(invitationUrl, namespaces.schema + 'agent');
+							console.log("Agent: " + friendWebId);
 
 							deferred.resolve({
 								friendWebId,
@@ -673,6 +664,35 @@ class DeChatCore {
 
 		return deferred.promise;
 	}
+	
+	async joinExistingChat(chatUrl, invitationUrl, interlocutorWebId, userWebId, userDataUrl, dataSync, fileUrl) {
+		const loader = new Loader(this.fetch);
+		const semanticchat = await loader.loadFromUrl(chatUrl, userWebId, userDataUrl);
+		const response = await this.generateResponseToInvitation(userDataUrl, invitationUrl, userWebId, interlocutorWebId, "yes");
+
+		dataSync.sendToInterlocutorsInbox(await this.getInboxUrl(interlocutorWebId), response.notification);
+		dataSync.deleteFileForUser(fileUrl);
+
+		return semanticchat;
+  }
+  
+  async processChatToJoin(chat, fileurl) {
+    chat.fileUrl = fileurl;
+	chat.name = "Chat de ";
+	console.log(chat.friendWebId);
+    chat.interlocutorName = await this.getFormattedName(chat.friendWebId.id);
+	console.log(chat);
+    return chat;
+  }
+  
+  /**
+   * This method returns the chat of an invitation.
+   * @param url: the url of the invitation.
+   * @returns {Promise}: a promise that returns the url of the chat (NamedNode) or null if none is found.
+   */
+  async getChatFromInvitation(url) {
+    return this.getObjectFromPredicateForResource(url, namespaces.schema + 'event');
+  }
 
 }
 module.exports = DeChatCore;
