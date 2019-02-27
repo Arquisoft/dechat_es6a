@@ -2,7 +2,7 @@
 == System Scope and Context
 
 
-[role="arc42help"]
+
 ****
 .Contents
 This project is part of the Software Architecture subject.
@@ -13,7 +13,7 @@ Our system scope is the implementation and testing of a descentralized chat usin
 
 === Business Context
 
-[role="arc42help"]
+
 ****
 
 ****
