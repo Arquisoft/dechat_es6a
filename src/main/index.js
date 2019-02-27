@@ -374,8 +374,9 @@ async function checkForNotifications() {
 
 	updates.forEach(async(fileurl) => {
 		let newChatFound = false;
-		// check for new moves
+		// check for new conversations
 		await core.checkForNewChat(semanticChat, userWebId, fileurl, userDataUrl, dataSync, (san, url) => {
+			//TODO : no existing semanticChat
 			semanticChat.loadMove(san, {
 				url
 			});
@@ -393,7 +394,7 @@ async function checkForNotifications() {
 				// check for games to join
 				const convoToJoin = await core.getJoinRequest(fileurl, userWebId);
 
-				if (gameToJoin) {
+				if (convoToJoin) {
 					chatsToJoin.push(await core.processChatToJoin(convoToJoin, fileurl));
 				}
 			}
