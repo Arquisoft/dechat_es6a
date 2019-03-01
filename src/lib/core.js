@@ -109,7 +109,7 @@ class DeChatCore {
 		const parsedWebId = URI.parse(webId);
 		const today = format(new Date(), 'yyyyMMdd');
 
-		return `${parsedWebId.scheme}://${parsedWebId.host}/public/dechat_${today}.ttl`;
+		return `${parsedWebId.scheme}://${parsedWebId.host}/private/dechat_${today}.ttl`;
 	}
 
 	async writePermission(url, dataSync) {
@@ -268,7 +268,6 @@ class DeChatCore {
 	  `;
 		//<${namespaces.schema}author> <${username}>;
 		//<${namespaces.schema}dateCreated> <${time}>;
-
 
 		try {
 			await dataSync.executeSPARQLUpdateForUser(userDataUrl, `INSERT DATA {${sparqlUpdate}}`);
@@ -457,7 +456,6 @@ class DeChatCore {
 					}]
 				})
 				.then(function (result) {
-					console.log(result);
 					result.bindingsStream.on('data', async function (data) {
 						data = data.toObject();
 						
@@ -465,7 +463,6 @@ class DeChatCore {
 						const messageTxt = data['?msgtext'].value;
 						let msgText = await self.getObjectFromPredicateForResource(messageUrl, namespaces.schema + 'text');
 						deferred.resolve(msgText);
-						console.log(msgText);
 					});
 
 					result.bindingsStream.on('end', function () {
@@ -582,12 +579,10 @@ class DeChatCore {
 					}]
 				})
 				.then(function (result) {
-					console.log("Result");
 					result.bindingsStream.on('data', async function (result) {
 						invitationFound = true;
 						result = result.toObject();
 						const invitationUrl = result['?invitation'].value;
-						console.log("InvitationURL: " + invitationUrl);
 						let chatUrl = invitationUrl.split("#")[0];
 						if (!chatUrl) {
 							chatUrl = await self.getChatFromInvitation(invitationUrl);
@@ -600,7 +595,6 @@ class DeChatCore {
 						if (!chatUrl) {
 							deferred.resolve(null);
 						} else {
-							console.log("ChatURL: " + chatUrl);
 							const recipient = await self.getObjectFromPredicateForResource(invitationUrl, namespaces.schema + 'recipient');
 							console.log("Recipient: " + recipient);
 							if (!recipient || recipient.value !== userWebId) {
@@ -693,6 +687,22 @@ class DeChatCore {
   async getChatFromInvitation(url) {
     return this.getObjectFromPredicateForResource(url, namespaces.schema + 'event');
   }
+  
+  async sendMessageToInterlocutorInbox(username, userWebId, time, message, interlocutorWebId, dataSync) {
+		const messageUrl = await this.generateUniqueUrlForResource(userWebId);
+		
+		const sparqlUpdate = `
+		<${messageUrl}> a <${namespaces.schema}Message>;
+		  <${namespaces.schema}text> <${message}>.
+	  `;
+		try {
+			await dataSync.sendToInterlocutorInbox(await this.getInboxUrl(interlocutorWebId), sparqlUpdate);
+		} catch (e) {
+			this.logger.error(`Could not send message to interlocutor.`);
+			console.log("Could not send");
+			this.logger.error(e);
+		}
+	}
 
 }
 module.exports = DeChatCore;

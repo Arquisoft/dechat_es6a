@@ -316,7 +316,8 @@ $('#write-chat').click(async() => {
 
 	$("#messagesarea").val($("#messagesarea").val() + "\n" + username + " [" + d.toLocaleDateString("en-US", options) + "]> " + message);
 	await core.storeMessage(userDataUrl, username, userWebId, d, message, dataSync);
-
+	await core.sendMessageToInterlocutorInbox(username, userWebId, d, message, interlocWebId, dataSync);
+	$("#message").val("");
 });
 
 
@@ -349,7 +350,6 @@ async function checkForNotifications() {
 				const convoToJoin = await core.getJoinRequest(fileurl, userWebId);
 
 				if (convoToJoin) {
-					console.log("Push");
 					chatsToJoin.push(await core.processChatToJoin(convoToJoin, fileurl));
 				}
 			}
