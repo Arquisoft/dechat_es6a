@@ -17,7 +17,9 @@ let refreshIntervalId;
 let dataSync = new DataSync(auth.fetch);
 let userDataUrl;
 let chatsToJoin = [];
+let interlocutorMessages = [];
 let semanticChat;
+let openChat = false;
 
 $('.login-btn').click(() => {
 	auth.popupLogin({
@@ -148,6 +150,7 @@ $('#join-chat-btn').click(async() => {
 
 		if (await core.writePermission(userDataUrl, dataSync)) {
 			$('#join-chat-options').addClass('hidden');
+			setUpForEveryChatOption();
 			const chatUrl = $('#chat-urls').val();
 
 			let i = 0;
@@ -157,15 +160,14 @@ $('#join-chat-btn').click(async() => {
 			}
 
 			const chat = chatsToJoin[i];
-
 			// remove it from the array so it's no longer shown in the UI
 			chatsToJoin.splice(i, 1);
 
-			 setUpForEveryChatOption();
-			 interlocWebId = chat.interlocutorWebId;
-			 semanticChat = await core.joinExistingChat(chatUrl, chat.invitationUrl, interlocWebId, userWebId, userDataUrl, dataSync, chat.fileUrl);
-
-			// setUpAfterEveryChatOptionIsSetUp();
+			 
+			 interlocWebId = chat.friendWebId.id;
+			 semanticChat = await core.joinExistingChat(chat.invitationUrl, interlocWebId, userWebId, userDataUrl, dataSync, chat.fileUrl);
+			 console.log(semanticChat);
+			setUpChat();
 		} else {
 			$('#write-permission-url').text(userDataUrl);
 			$('#write-permission').modal('show');
@@ -282,6 +284,7 @@ $('#continue-chat-btn').click(async() => {
 
 $('.btn-cancel').click(() => {
 	interlocWebId = null;
+	openChat = false;
 
 	$('#chat').addClass('hidden');
 	$('#new-chat-options').addClass('hidden');
@@ -299,6 +302,13 @@ async function setUpChat() {
 	const intName = await core.getFormattedName(interlocWebId);
 
 	$('#interlocutor-name').text(intName);
+	
+	const message = $("#message").val();
+	interlocutorMessages.forEach(async(message) => {
+		$("#messagesarea").val($("#messagesarea").val() + "\n" + intName + " [?]> " + message.messageTx);
+		await core.storeMessage(userDataUrl, null, userWebId, null, message.messageTx, interlocWebId, dataSync, false);
+	});
+	openChat = true;
 
 }
 
@@ -315,7 +325,7 @@ $('#write-chat').click(async() => {
 	const message = $("#message").val();
 
 	$("#messagesarea").val($("#messagesarea").val() + "\n" + username + " [" + d.toLocaleDateString("en-US", options) + "]> " + message);
-	await core.storeMessage(userDataUrl, username, userWebId, d, message, interlocWebId, dataSync);
+	await core.storeMessage(userDataUrl, username, userWebId, d, message, interlocWebId, dataSync, true);
 	$("#message").attr('value', '');
 });
 
@@ -326,38 +336,32 @@ $('#write-chat').click(async() => {
  * @returns {Promise<void>}
  */
 async function checkForNotifications() {
-	console.log('Checking for new notifications');
+	//console.log('Checking for new notifications');
 
 	const updates = await core.checkUserInboxForUpdates(await core.getInboxUrl(userWebId));		//HECHO
 
 	updates.forEach(async(fileurl) => {
-		console.log(fileurl);
-		let newChatFound = false;
 		// check for new 
-
 		let message = await core.getNewMessage(fileurl, userWebId);
+		if(message) {
+			interlocutorMessages.push(message);
+			if(openChat)
+				$("#messagesarea").val($("#messagesarea").val() + "\n" + intName + " [?]> " + message.messageTx);
+		}
 		
-		//No se guardan mensajes en la inbox, asi que esto no hace nada por ahora
-		//const messages = await core.checkForNewMessage(semanticChat, userWebId, fileurl, userDataUrl, dataSync);
-		//console.log(messages);
-		//if(messages) 
-		//	newChatFound = true;
-		
-		
-		
-		if (!newChatFound) {
-			const response = await core.getResponseToInvitation(fileurl);
-			if (response) {
-				this.processResponseInNotification(response, fileurl);
-			} else {
-				const convoToJoin = await core.getJoinRequest(fileurl, userWebId);
+		const response = await core.getResponseToInvitation(fileurl);
+		if (response) {
+			this.processResponseInNotification(response, fileurl);
+		} else {
+			const convoToJoin = await core.getJoinRequest(fileurl, userWebId);
 
-				if (convoToJoin) {
-					chatsToJoin.push(await core.processChatToJoin(convoToJoin, fileurl));
-				}
+			if (convoToJoin) {
+				chatsToJoin.push(await core.processChatToJoin(convoToJoin, fileurl));
 			}
 		}
 	});
+	console.log(interlocutorMessages);
+	console.log(chatsToJoin);
 }
 
 /**

@@ -597,15 +597,39 @@ class DeChatCore {
 		return deferred.promise;
 	}
 	
-	async joinExistingChat(chatUrl, invitationUrl, interlocutorWebId, userWebId, userDataUrl, dataSync, fileUrl) {
-		const loader = new Loader(this.fetch);
-		const semanticchat = await loader.loadFromUrl(chatUrl, userWebId, userDataUrl);
+	async joinExistingChat(invitationUrl, interlocutorWebId, userWebId, userDataUrl, dataSync, fileUrl) {
 		const response = await this.generateResponseToInvitation(userDataUrl, invitationUrl, userWebId, interlocutorWebId, "yes");
+		
+		dataSync.sendToInterlocutorInbox(await this.getInboxUrl(interlocutorWebId), response.notification);
+		//dataSync.deleteFileForUser(fileUrl);
+  }
+  
+   async generateResponseToInvitation(baseUrl, invitationUrl, userWebId, interlocutorWebId, response) {
+    const rsvpUrl = await this.generateUniqueUrlForResource(baseUrl);
+    let responseUrl;
 
-		dataSync.sendToInterlocutorsInbox(await this.getInboxUrl(interlocutorWebId), response.notification);
-		dataSync.deleteFileForUser(fileUrl);
+    if (response === 'yes') {
+      responseUrl = namespaces.schema + 'RsvpResponseYes';
+    } else if (response === "no") {
+      responseUrl = namespaces.schema + 'RsvpResponseNo';
+    } else {
+      throw new Error(`The parameter "response" expects either "yes" or "no". Instead, "${response}" was provided.`);
+    }
 
-		return semanticchat;
+    const notification = `<${invitationUrl}> <${namespaces.schema}result> <${rsvpUrl}>.`;
+    const sparqlUpdate = `
+    <${rsvpUrl}> a <${namespaces.schema}RsvpAction>;
+      <${namespaces.schema}rsvpResponse> <${responseUrl}>;
+      <${namespaces.schema}agent> <${userWebId}>;
+      <${namespaces.schema}recipient> <${interlocutorWebId}>.
+      
+    <${invitationUrl}> <${namespaces.schema}result> <${rsvpUrl}>.
+  `;
+
+    return {
+      notification,
+      sparqlUpdate
+    };
   }
   
   async processChatToJoin(chat, fileurl) {
@@ -626,13 +650,12 @@ class DeChatCore {
     return this.getObjectFromPredicateForResource(url, namespaces.schema + 'event');
   }
 	
-	async storeMessage(userDataUrl, username, userWebId, time, message, interlocutorWebId, dataSync) {
+	async storeMessage(userDataUrl, username, userWebId, time, message, interlocutorWebId, dataSync, toSend) {
 		
 		const messageUrl = await this.generateUniqueUrlForResource(userDataUrl);
-		const notification = `<${messageUrl}> a <${namespaces.schema}Message>.`;
 		const sparqlUpdate = `
 		<${messageUrl}> a <${namespaces.schema}Message>;
-		  <${namespaces.schema}text> <${message}>;
+		  <${namespaces.schema}text> <${message}>.
 	  `;
 		//<${namespaces.schema}author> <${username}>;
 		//<${namespaces.schema}dateCreated> <${time}>;
@@ -645,6 +668,7 @@ class DeChatCore {
 			this.logger.error(e);
 		}
 		
+		if(toSend) {
 		try {
 			await dataSync.sendToInterlocutorInbox(await this.getInboxUrl(interlocutorWebId), sparqlUpdate);
 		} catch (e) {
@@ -652,21 +676,21 @@ class DeChatCore {
 			console.log("Could not send");
 			this.logger.error(e);
 		}
+		}
 
 	}
 	
 	async getNewMessage(fileurl, userWebId) {
 		const deferred = Q.defer();
 		const rdfjsSource = await rdfjsSourceFromUrl(fileurl, this.fetch);
-
 		if (rdfjsSource) {
 			const engine = newEngine();
 			let messageFound = false;
 			const self = this;
-
-			engine.query(`SELECT ?message {
-    ?message a <${namespaces.schema}Message>.
-  }`, {
+			engine.query(`SELECT * {
+				?message a <${namespaces.schema}Message>;
+					<${namespaces.schema}text> ?msgtxt;
+			}`, {
 					sources: [{
 						type: 'rdfjsSource',
 						value: rdfjsSource
@@ -677,12 +701,9 @@ class DeChatCore {
 						messageFound = true;
 						result = result.toObject();
 						const messageUrl = result['?message'].value;
-						const messageTx = await self.getObjectFromPredicateForResource(messageUrl, namespaces.schema + 'text');
-						if (!messageTx) {
-								deferred.resolve(null);
-						}
-
-						deferred.resolve(messageTx);
+						const messageTx = result['?msgtxt'].value.split("/inbox/")[1];
+						let chatUrl = invitationUrl.split("#")[0];
+						deferred.resolve({messageTx});
 					});
 
 					result.bindingsStream.on('end', function () {
