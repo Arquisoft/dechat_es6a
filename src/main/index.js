@@ -315,9 +315,8 @@ $('#write-chat').click(async() => {
 	const message = $("#message").val();
 
 	$("#messagesarea").val($("#messagesarea").val() + "\n" + username + " [" + d.toLocaleDateString("en-US", options) + "]> " + message);
-	await core.storeMessage(userDataUrl, username, userWebId, d, message, dataSync);
-	await core.sendMessageToInterlocutorInbox(username, userWebId, d, message, interlocWebId, dataSync);
-	$("#message").val("");
+	await core.storeMessage(userDataUrl, username, userWebId, d, message, interlocWebId, dataSync);
+	$("#message").attr('value', '');
 });
 
 
@@ -332,11 +331,15 @@ async function checkForNotifications() {
 	const updates = await core.checkUserInboxForUpdates(await core.getInboxUrl(userWebId));		//HECHO
 
 	updates.forEach(async(fileurl) => {
+		console.log(fileurl);
 		let newChatFound = false;
 		// check for new 
+
+		let message = await core.getNewMessage(fileurl, userWebId);
 		
 		//No se guardan mensajes en la inbox, asi que esto no hace nada por ahora
 		//const messages = await core.checkForNewMessage(semanticChat, userWebId, fileurl, userDataUrl, dataSync);
+		//console.log(messages);
 		//if(messages) 
 		//	newChatFound = true;
 		

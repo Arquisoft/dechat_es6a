@@ -107,7 +107,7 @@ class DeChatCore {
 
 	getDefaultDataUrl(webId) {
 		const parsedWebId = URI.parse(webId);
-		const today = format(new Date(), 'yyyyMMdd');
+		const today = format(new Date(), 'yyyyMMddhhmm');
 
 		return `${parsedWebId.scheme}://${parsedWebId.host}/private/dechat_${today}.ttl`;
 	}
@@ -184,13 +184,6 @@ class DeChatCore {
 		const invitation = await this.generateInvitation(userDataUrl, semanticChat.getUrl(), userWebId, interlocutorWebId);
 
 		try {
-			await dataSync.executeSPARQLUpdateForUser(userDataUrl, `INSERT DATA {${semanticChat.getMinimumInfo()} \n <${chatUrl}> <${namespaces.storage}storeIn> <${userDataUrl}>}`);
-		} catch (e) {
-			this.logger.error(`Could not save new chat data.`);
-			this.logger.error(e);
-		}
-
-		try {
 			await dataSync.executeSPARQLUpdateForUser(userWebId, `INSERT DATA { <${chatUrl}> <${namespaces.schema}contributor> <${userWebId}>; <${namespaces.storage}storeIn> <${userDataUrl}>.}`);
 		} catch (e) {
 			this.logger.error(`Could not add chat to WebId.`);
@@ -259,25 +252,6 @@ class DeChatCore {
 		return this.inboxUrls[webId];
 	}
 
-	async storeMessage(userDataUrl, username, userWebId, time, message, dataSync) {
-
-		const messageUrl = await this.generateUniqueUrlForResource(userWebId);
-		const sparqlUpdate = `
-		<${messageUrl}> a <${namespaces.schema}Message>;
-		  <${namespaces.schema}text> <${message}>.
-	  `;
-		//<${namespaces.schema}author> <${username}>;
-		//<${namespaces.schema}dateCreated> <${time}>;
-
-		try {
-			await dataSync.executeSPARQLUpdateForUser(userDataUrl, `INSERT DATA {${sparqlUpdate}}`);
-		} catch (e) {
-			this.logger.error(`Could not save new message.`);
-			this.logger.error(e);
-		}
-
-	}
-
 	//________________ J O I N _____________________//
 
 	/**
@@ -335,7 +309,7 @@ class DeChatCore {
 	async checkForNewMessage(semanticChat = null, userWebId, fileurl, userDataUrl, dataSync, callback) {
 
 		//TODO adapt this
-		const originalData = await this.getInitialMessages(fileurl);
+		const originalData = await this.getMessages(fileurl);
 		let chat = null;
 		
 
@@ -434,12 +408,7 @@ class DeChatCore {
 		return deferred.promise;
 	}
 
-	/**
-	 * This method returns the original chat in a file.
-	 * @param fileurl: the url of the file in which to look.
-	 * @returns {Promise<string|null>}: a promise that resolves with the url of the move or null if none is found.
-	 */
-	async getInitialMessages(fileurl) {
+	async getMessages(fileurl) {
 		const deferred = Q.defer();
 		const rdfjsSource = await rdfjsSourceFromUrl(fileurl, this.fetch);
 
@@ -456,6 +425,7 @@ class DeChatCore {
 					}]
 				})
 				.then(function (result) {
+					console.log("SI");
 					result.bindingsStream.on('data', async function (data) {
 						data = data.toObject();
 						
@@ -470,41 +440,9 @@ class DeChatCore {
 					});
 				});
 		} else {
+			console.log("NO");
 			deferred.resolve(null);
 		}
-
-		return deferred.promise;
-	}
-
-	/**
-	 * This method returns the SAN of a move.
-	 * @param moveUrl: the url of the move.
-	 * @returns {Promise<string|null>}: a promise that resolves with the san or null.
-	 */
-	async getSANRecord(moveUrl) {
-		const deferred = Q.defer();
-		const rdfjsSource = await rdfjsSourceFromUrl(moveUrl, this.fetch);
-		const engine = newEngine();
-
-		engine.query(`SELECT ?san {
-    <${moveUrl}> <${namespaces.chess}hasSANRecord> ?san.
-  }`, {
-				sources: [{
-					type: 'rdfjsSource',
-					value: rdfjsSource
-				}]
-			})
-			.then(function (result) {
-				result.bindingsStream.on('data', function (data) {
-					data = data.toObject();
-
-					deferred.resolve(data['?san']);
-				});
-
-				result.bindingsStream.on('end', function () {
-					deferred.resolve(null);
-				});
-			});
 
 		return deferred.promise;
 	}
@@ -596,13 +534,13 @@ class DeChatCore {
 							deferred.resolve(null);
 						} else {
 							const recipient = await self.getObjectFromPredicateForResource(invitationUrl, namespaces.schema + 'recipient');
-							console.log("Recipient: " + recipient);
+							//console.log("Recipient: " + recipient);
 							if (!recipient || recipient.value !== userWebId) {
 								deferred.resolve(null);
 							}
 
 							const friendWebId = await self.getObjectFromPredicateForResource(invitationUrl, namespaces.schema + 'agent');
-							console.log("Agent: " + friendWebId);
+							//console.log("Agent: " + friendWebId);
 
 							deferred.resolve({
 								friendWebId,
@@ -673,9 +611,9 @@ class DeChatCore {
   async processChatToJoin(chat, fileurl) {
     chat.fileUrl = fileurl;
 	chat.name = "Chat de ";
-	console.log(chat.friendWebId);
+	//console.log(chat.friendWebId);
     chat.interlocutorName = await this.getFormattedName(chat.friendWebId.id);
-	console.log(chat);
+	//console.log(chat);
     return chat;
   }
   
@@ -687,14 +625,26 @@ class DeChatCore {
   async getChatFromInvitation(url) {
     return this.getObjectFromPredicateForResource(url, namespaces.schema + 'event');
   }
-  
-  async sendMessageToInterlocutorInbox(username, userWebId, time, message, interlocutorWebId, dataSync) {
-		const messageUrl = await this.generateUniqueUrlForResource(userWebId);
+	
+	async storeMessage(userDataUrl, username, userWebId, time, message, interlocutorWebId, dataSync) {
 		
+		const messageUrl = await this.generateUniqueUrlForResource(userDataUrl);
+		const notification = `<${messageUrl}> a <${namespaces.schema}Message>.`;
 		const sparqlUpdate = `
 		<${messageUrl}> a <${namespaces.schema}Message>;
-		  <${namespaces.schema}text> <${message}>.
+		  <${namespaces.schema}text> <${message}>;
 	  `;
+		//<${namespaces.schema}author> <${username}>;
+		//<${namespaces.schema}dateCreated> <${time}>;
+
+		try {
+			await dataSync.executeSPARQLUpdateForUser(userDataUrl, `INSERT DATA {${sparqlUpdate}}`);
+		} catch (e) {
+			console.log("NO GUARDA");
+			this.logger.error(`Could not save new message.`);
+			this.logger.error(e);
+		}
+		
 		try {
 			await dataSync.sendToInterlocutorInbox(await this.getInboxUrl(interlocutorWebId), sparqlUpdate);
 		} catch (e) {
@@ -702,6 +652,50 @@ class DeChatCore {
 			console.log("Could not send");
 			this.logger.error(e);
 		}
+
+	}
+	
+	async getNewMessage(fileurl, userWebId) {
+		const deferred = Q.defer();
+		const rdfjsSource = await rdfjsSourceFromUrl(fileurl, this.fetch);
+
+		if (rdfjsSource) {
+			const engine = newEngine();
+			let messageFound = false;
+			const self = this;
+
+			engine.query(`SELECT ?message {
+    ?message a <${namespaces.schema}Message>.
+  }`, {
+					sources: [{
+						type: 'rdfjsSource',
+						value: rdfjsSource
+					}]
+				})
+				.then(function (result) {
+					result.bindingsStream.on('data', async function (result) {
+						messageFound = true;
+						result = result.toObject();
+						const messageUrl = result['?message'].value;
+						const messageTx = await self.getObjectFromPredicateForResource(messageUrl, namespaces.schema + 'text');
+						if (!messageTx) {
+								deferred.resolve(null);
+						}
+
+						deferred.resolve(messageTx);
+					});
+
+					result.bindingsStream.on('end', function () {
+						if (!messageFound) {
+							deferred.resolve(null);
+						}
+					});
+				});
+		} else {
+			deferred.resolve(null);
+		}
+
+		return deferred.promise;
 	}
 
 }
