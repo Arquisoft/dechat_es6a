@@ -230,6 +230,7 @@ class DeChatCore {
 
 	async generateInvitation(baseUrl, chatUrl, userWebId, interlocutorWebId) {
 		const invitationUrl = await this.generateUniqueUrlForResource(baseUrl);
+		console.log(invitationUrl);
 		const notification = `<${invitationUrl}> a <${namespaces.schema}InviteAction>.`;
 		const sparqlUpdate = `
     <${invitationUrl}> a <${namespaces.schema}InviteAction>;
@@ -457,8 +458,9 @@ class DeChatCore {
 	async getResponseToInvitation(fileurl) {
 		const deferred = Q.defer();
 		const rdfjsSource = await rdfjsSourceFromUrl(fileurl, this.fetch);
-
+		
 		if (rdfjsSource) {
+			console.log("Aqui?");
 			const engine = newEngine();
 
 			engine.query(`SELECT * {
@@ -485,6 +487,7 @@ class DeChatCore {
 				});
 		} else {
 			deferred.resolve(null);
+			console.log("Alli?");
 		}
 
 		return deferred.promise;
@@ -518,8 +521,10 @@ class DeChatCore {
 				})
 				.then(function (result) {
 					result.bindingsStream.on('data', async function (result) {
+						
 						invitationFound = true;
 						result = result.toObject();
+						//console.log(result);
 						const invitationUrl = result['?invitation'].value;
 						let chatUrl = invitationUrl.split("#")[0];
 						if (!chatUrl) {
@@ -529,10 +534,12 @@ class DeChatCore {
 								self.logger.info('chat: found by using Comunica directly, but not when using LDflex. Caching issue (reported).');
 							}
 						}
+						//console.log(chatUrl);
 
 						if (!chatUrl) {
 							deferred.resolve(null);
 						} else {
+							//console.log(invitationUrl);
 							const recipient = await self.getObjectFromPredicateForResource(invitationUrl, namespaces.schema + 'recipient');
 							//console.log("Recipient: " + recipient);
 							if (!recipient || recipient.value !== userWebId) {
@@ -552,6 +559,7 @@ class DeChatCore {
 
 					result.bindingsStream.on('end', function () {
 						if (!invitationFound) {
+							console.log("NO");
 							deferred.resolve(null);
 						}
 					});
@@ -689,7 +697,7 @@ class DeChatCore {
 			const self = this;
 			engine.query(`SELECT * {
 				?message a <${namespaces.schema}Message>;
-					<${namespaces.schema}text> ?msgtxt;
+					<${namespaces.schema}text> ?msgtxt.
 			}`, {
 					sources: [{
 						type: 'rdfjsSource',
@@ -702,7 +710,6 @@ class DeChatCore {
 						result = result.toObject();
 						const messageUrl = result['?message'].value;
 						const messageTx = result['?msgtxt'].value.split("/inbox/")[1];
-						let chatUrl = invitationUrl.split("#")[0];
 						deferred.resolve({messageTx});
 					});
 

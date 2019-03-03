@@ -341,24 +341,34 @@ async function checkForNotifications() {
 	const updates = await core.checkUserInboxForUpdates(await core.getInboxUrl(userWebId));		//HECHO
 
 	updates.forEach(async(fileurl) => {
+		
 		// check for new 
+		let newMessageFound = false;
 		let message = await core.getNewMessage(fileurl, userWebId);
+		//console.log(message);
 		if(message) {
 			interlocutorMessages.push(message);
+			newMessageFound = true;
 			if(openChat)
 				$("#messagesarea").val($("#messagesarea").val() + "\n" + intName + " [?]> " + message.messageTx);
 		}
 		
+		if(!newMessageFound) {
+		//console.log(fileurl + " A");
 		const response = await core.getResponseToInvitation(fileurl);
+		//console.log(fileurl + " B");
 		if (response) {
+			//console.log(fileurl + " C");
 			this.processResponseInNotification(response, fileurl);
 		} else {
+			//console.log(fileurl + " D");
 			const convoToJoin = await core.getJoinRequest(fileurl, userWebId);
-
+			console.log(convoToJoin);
 			if (convoToJoin) {
+				//console.log(fileurl + " E");
 				chatsToJoin.push(await core.processChatToJoin(convoToJoin, fileurl));
 			}
-		}
+		} }
 	});
 	console.log(interlocutorMessages);
 	console.log(chatsToJoin);
