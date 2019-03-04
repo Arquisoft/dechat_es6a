@@ -181,7 +181,7 @@ class DeChatCore {
 			userWebId,
 			interlocutorWebId
 		});
-		const invitation = await this.generateInvitation(userDataUrl, semanticChat.getUrl(), userWebId, interlocutorWebId);
+		const invitation = await this.generateInvitation(userDataUrl.replace("/private/", "/public/"), semanticChat.getUrl(), userWebId, interlocutorWebId);
 
 		try {
 			await dataSync.executeSPARQLUpdateForUser(userWebId, `INSERT DATA { <${chatUrl}> <${namespaces.schema}contributor> <${userWebId}>; <${namespaces.storage}storeIn> <${userDataUrl}>.}`);
@@ -191,7 +191,7 @@ class DeChatCore {
 		}
 
 		try {
-			await dataSync.executeSPARQLUpdateForUser(userDataUrl, `INSERT DATA {${invitation.sparqlUpdate}}`);
+			await dataSync.executeSPARQLUpdateForUser(userDataUrl.replace("/private/", "/public/"), `INSERT DATA {${invitation.sparqlUpdate}}`);
 		} catch (e) {
 			this.logger.error(`Could not save invitation for chat.`);
 			this.logger.error(e);
