@@ -64,7 +64,7 @@ auth.trackSession(async session => {
 		$('#user-menu').addClass('hidden');
 		$('#new-chat-options').addClass('hidden');
 		$('#join-chat-options').addClass('hidden');
-		$('#continue-chat-options').addClass('hidden');
+		$('#open-chat-options').addClass('hidden');
 		userWebId = null;
 		clearInterval(refreshIntervalId);
 		refreshIntervalId = null;
@@ -185,102 +185,72 @@ function setUpForEveryChatOption() {
 	$('#chat-loading').removeClass('hidden');
 }
 
-
-/**
- * This method lets a player continue an existing chess chat.
- * @param chatUrl: the url of the chat to continue.
- * @returns {Promise<void>}
- */
-async function continueExistingChat(chatUrl) {
-	setUpForEveryChatOption();
-
-	//No Existing loader!!!
-	//const loader = new Loader(auth.fetch);
-	//semanticChat = await loader.loadFromUrl(chatUrl, userWebId, userDataUrl);
-	//interlocWebId = semanticChat.getOpponentWebId();
-
-	setUpNewConversation();
-}
-
-
-$('#continue-btn').click(async() => {
+$('#open-btn').click(async() => {
 	if (userWebId) {
 		afterChatOption();
-
-		const $tbody = $('#continue-chat-table tbody');
+		
+		 const $tbody = $('#open-chat-table tbody');
 		$tbody.empty();
-		$('#continue-chat-options').removeClass('hidden');
 
-		const chats = await core.getChatsToContinue(userWebId);
+		$('#open-chat-options').removeClass('hidden');
+		const chats = await core.getChatsToOpen(userWebId);
 
-		$('#continue-looking').addClass('hidden');
+		$('#open-looking').addClass('hidden');
 
 		if (chats.length > 0) {
-			$('#continue-loading').addClass('hidden');
-			$('#continue-chats').removeClass('hidden');
+			$('#open-loading').addClass('hidden');
+			$('#open-chats').removeClass('hidden');
 
 			chats.forEach(async chat => {
-				let name = await core.getObjectFromPredicateForResource(chat.chatUrl, namespaces.schema + 'name');
-
-				/*				if (!name) {
-									name  chat.chatUrl;
-								} else {
-									name = name.value;
-								}
-				*/
-
-				//NO EXISTING LOADER !!
-
-				//const loader = new Loader(auth.fetch);
+				//let agent = await core.getObjectFromPredicateForResource(chat.chatUrl, namespaces.schema + 'agent');
+				
+				const loader = new Loader(auth.fetch);
 				//const friendWebId = await loader.findWebIdOfOpponent(chat.chatUrl, userWebId);
 				//const friendName = await core.getFormattedName(friendWebId);
 
-				// <td>${name}</td>
 				const $row = $(`
           <tr data-chat-url="${chat.chatUrl}" class='clickable-row'>
-           	
-            <td>${friendName}</td>
+            <td>Chat de</td>
+            <td>Desconocido</td>
           </tr>`);
 
-				$row.click(function () {
-					$('#continue-chat-options').addClass('hidden');
-					const selectedChat = $(this).data('chat-url');
+        $row.click(function() {
+          $('#continue-chat-options').addClass('hidden');
+          const selectedChat = $(this).data('chat-url');
 
-					let i = 0;
+          let i = 0;
 
-					while (i < chats.length && chats[i].chatUrl !== selectedChat) {
-						i++;
-					}
+          while (i < chats.length && chats[i].chatUrl !== selectedChat) {
+            i ++;
+          }
 
-					userDataUrl = chats[i].storeUrl;
+          userDataUrl = chats[i].storeUrl;
 
-					continueExistingChat(selectedChat);
-				});
-
-				$tbody.append($row);
+          openExistingChat(selectedGame);
 			});
-		} else {
-			$('#no-continue').removeClass('hidden');
+			$tbody.append($row);
+		});  } else {
+			$('#no-open').removeClass('hidden');
 		}
 	} else {
 		$('#login-required').modal('show');
 	}
-});
+ });
 
-$('#continue-chat-btn').click(async() => {
-	$('#continue-chat-options').addClass('hidden');
-	const chats = await core.getChatsToContinue(userWebId);
-	const selectedConvo = $('#continue-chat-urls').val();
-	let i = 0;
+/**
+ * This method lets a player open an existing chess chat.
+ * @param chatUrl: the url of the chat to open.
+ * @returns {Promise<void>}
+ */
+async function openExistingChat(chatUrl) {
+	setUpForEveryChatOption();
 
-	while (i < chats.length && chats[i].chatUrl !== selectedConvo) {
-		i++;
-	}
+	const loader = new Loader(auth.fetch);
+	semanticChat = await loader.loadFromUrl(chatUrl, userWebId, userDataUrl);
+	interlocWebId = semanticChat.getInterlocutorWebId();
 
-	userDataUrl = chats[i].storeUrl;
-
-	continueExistingChat(selectedConvo);
-});
+	setUpChat();
+}
 
 $('.btn-cancel').click(() => {
 	interlocWebId = null;
@@ -289,7 +259,7 @@ $('.btn-cancel').click(() => {
 	$('#chat').addClass('hidden');
 	$('#new-chat-options').addClass('hidden');
 	$('#join-chat-options').addClass('hidden');
-	$('#continue-chat-options').addClass('hidden');
+	$('#open-chat-options').addClass('hidden');
 	$('#chat-options').removeClass('hidden');
 });
 
@@ -344,9 +314,11 @@ async function checkForNotifications() {
 		
 		// check for new 
 		let newMessageFound = false;
+		console.log("Buscando nuevos mensajes");
 		let message = await core.getNewMessage(fileurl, userWebId);
 		//console.log(message);
 		if(message) {
+			console.log("Guardando mensajes");
 			interlocutorMessages.push(message);
 			newMessageFound = true;
 			if(openChat)
@@ -354,24 +326,23 @@ async function checkForNotifications() {
 		}
 		
 		if(!newMessageFound) {
-		//console.log(fileurl + " A");
+		console.log("Buscando respuesta a invitación");
 		const response = await core.getResponseToInvitation(fileurl);
-		//console.log(fileurl + " B");
 		if (response) {
-			//console.log(fileurl + " C");
+			console.log("Procesando respuesta");
 			this.processResponseInNotification(response, fileurl);
 		} else {
-			//console.log(fileurl + " D");
+			console.log("Buscar invitacion");
 			const convoToJoin = await core.getJoinRequest(fileurl, userWebId);
-			console.log(convoToJoin);
+			//console.log(convoToJoin);
 			if (convoToJoin) {
-				//console.log(fileurl + " E");
+				console.log("Procesando nuevo chat");
 				chatsToJoin.push(await core.processChatToJoin(convoToJoin, fileurl));
 			}
 		} }
 	});
-	console.log(interlocutorMessages);
-	console.log(chatsToJoin);
+	//console.log(interlocutorMessages);
+	//console.log(chatsToJoin);
 }
 
 /**
@@ -398,8 +369,8 @@ async function processResponseInNotification(response, fileurl) {
 
 			const loader = new Loader(auth.fetch);
 
-			const friendWebId = await loader.findWebIdOfInterlocutor(chatUrl, userWebId);
-			const friendsName = await core.getFormattedName(friendWebId);
+			//const friendWebId = await loader.findWebIdOfInterlocutor(chatUrl, userWebId);
+			const friendsName = "Unknown"; //await core.getFormattedName(friendWebId);
 
 			//show response in UI
 			if (!convoName) {
@@ -437,3 +408,13 @@ async function processResponseInNotification(response, fileurl) {
 		console.log(`No game url was found for response ${response.value}.`);
 	}
 }
+
+$('#clear-inbox-btn').click(async () => {
+  const resources = await core.getAllResourcesInInbox(await core.getInboxUrl(userWebId));
+  
+  resources.forEach(async r => {
+    if (await core.fileContainsChatInfo(r)) {
+      dataSync.deleteFileForUser(r);
+    }
+  });
+});

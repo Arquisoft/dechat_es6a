@@ -30,7 +30,7 @@
       <div id="chat-options" class="col-6 text-center">
          <button id="new-btn" type="button" class="btn btn-dark btn-lg"> New chat</button>
          <button id="join-btn" type="button" class="btn btn-dark btn-lg">Join chat</button>
-         <button id="continue-btn" type="button" class="btn btn-dark btn-lg">Continue chat</button>
+         <button id="open-btn" type="button" class="btn btn-dark btn-lg">Open chat</button>
       </div>
       
       <!--New chat-->
@@ -71,17 +71,17 @@
          </form>
       </div>
       
-      <!--Continue chat-->
-      <div id="continue-chat-options" class="col-6 hidden">
-         <div id="continue-loading"> <span id="continue-looking">Looking for chats to continue...</span> <span id="no-continue" class="hidden">No conversations to join were found.</span> 
+      <!--open chat-->
+      <div id="open-chat-options" class="col-6 hidden">
+         <div id="open-loading"> <span id="open-looking">Looking for chats to open...</span> <span id="no-open" class="hidden">No conversations to join were found.</span> 
             <!--No chats-->
             <div class="form-group">
                <button type="button" class="btn-cancel btn btn-dark">Cancel</button>
             </div>
          </div>
          <!--Affirmative-->
-         <div id="continue-chats" class="hidden"> <span>Select the conversation that you want to continue</span>
-            <table id="continue-chat-table" class="table table-hover">
+         <div id="open-chats" class="hidden"> <span>Select the conversation that you want to open</span>
+            <table id="open-chat-table" class="table table-hover">
                <thead>
                   <tr>
                      <th scope="col" id="table-title" >Title</th>
@@ -94,7 +94,7 @@
             <button type="button" class="btn-cancel btn btn-dark">Cancel</button>
          </div>
       </div>
-      <!--END Continue chat--> 
+      <!--END open chat--> 
       
       <!--Loading-->
       <div id="chat-loading" class="hidden"> <span>Loading your conversation...</span> </div>

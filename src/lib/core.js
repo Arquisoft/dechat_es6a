@@ -123,7 +123,7 @@ class DeChatCore {
 	 * @returns {Promise}: a promise that resolves to an array with objects.
 	 * Each object contains the url of the chat (chatUrl) and the url where the data of the chat is store (storeUrl).
 	 */
-	async getChatsToContinue(webid) {
+	async getChatsToOpen(webid) {
 		const deferred = Q.defer();
 		const rdfjsSource = await rdfjsSourceFromUrl(webid, this.fetch);
 
@@ -132,45 +132,39 @@ class DeChatCore {
 			const chatUrls = [];
 			const promises = [];
 
-
 			engine.query(`SELECT ?chat ?url {
-     ?chat <${namespaces.schema}contributor> <${webid}>;
-        <${namespaces.storage}storeIn> ?url.
-  }`, {
+			 ?chat <${namespaces.schema}contributor> <${webid}>;
+				<${namespaces.storage}storeIn> ?url.
+		  }`, {
 					sources: [{
 						type: 'rdfjsSource',
 						value: rdfjsSource
 					}]
 				})
 				.then(result => {
-					result.bindingsStream.on('data', async(data) => {
-						const deferred = Q.defer();
-						promises.push(deferred.promise);
-						data = data.toObject();
+          result.bindingsStream.on('data', async (data) => {
+            const deferred = Q.defer();
+            promises.push(deferred.promise);
+            data = data.toObject();
+              chatUrls.push({
+                chatUrl: data['?chat'].value,
+                storeUrl: data['?url'].value,
+              });
+            deferred.resolve();
+          });
 
-						const realTime = await this.getObjectFromPredicateForResource(data['?chat'].value, namespaces.chess + 'isRealTime');
+          result.bindingsStream.on('end', function () {
+            Q.all(promises).then(() => {
+				console.log(chatUrls);
+              deferred.resolve(chatUrls);
+            });
+          });
+        });
+    } else {
+      deferred.resolve(null);
+    }
 
-						if (!realTime || realTime.value !== 'true') {
-							chatUrls.push({
-								chatUrl: data['?chat'].value,
-								storeUrl: data['?url'].value,
-							});
-						}
-
-						deferred.resolve();
-					});
-
-					result.bindingsStream.on('end', function () {
-						Q.all(promises).then(() => {
-							deferred.resolve(chatUrls);
-						});
-					});
-				});
-		} else {
-			deferred.resolve(null);
-		}
-
-		return deferred.promise;
+    return deferred.promise;
 	}
 
 	async setUpNewChat(userDataUrl, userWebId, interlocutorWebId, dataSync) {
@@ -416,9 +410,10 @@ class DeChatCore {
 		if (rdfjsSource) {
 			const engine = newEngine();
 
-			//TODO: CHANGE THE NAMESPACES
+			//<${namespaces.schema}dateCreated> ?time;
 			engine.query(`SELECT * {
-    ?message <${namespaces.schema}text> ?msgtext.
+				?message <${namespaces.schema}givenName> ?username;				
+				<${namespaces.schema}text> ?msgtext.
   }`, {
 					sources: [{
 						type: 'rdfjsSource',
@@ -460,7 +455,6 @@ class DeChatCore {
 		const rdfjsSource = await rdfjsSourceFromUrl(fileurl, this.fetch);
 		
 		if (rdfjsSource) {
-			console.log("Aqui?");
 			const engine = newEngine();
 
 			engine.query(`SELECT * {
@@ -663,11 +657,11 @@ class DeChatCore {
 		const messageUrl = await this.generateUniqueUrlForResource(userDataUrl);
 		const sparqlUpdate = `
 		<${messageUrl}> a <${namespaces.schema}Message>;
+		   <${namespaces.schema}givenName> <${username}>;
 		  <${namespaces.schema}text> <${message}>.
 	  `;
-		//<${namespaces.schema}author> <${username}>;
-		//<${namespaces.schema}dateCreated> <${time}>;
-
+	    //<${namespaces.schema}dateCreated> <${time}>;
+		console.log(sparqlUpdate);
 		try {
 			await dataSync.executeSPARQLUpdateForUser(userDataUrl, `INSERT DATA {${sparqlUpdate}}`);
 		} catch (e) {
@@ -695,9 +689,10 @@ class DeChatCore {
 			const engine = newEngine();
 			let messageFound = false;
 			const self = this;
+			//<${namespaces.schema}dateCreated> ?time;
 			engine.query(`SELECT * {
-				?message a <${namespaces.schema}Message>;
-					<${namespaces.schema}text> ?msgtxt.
+				?message <${namespaces.schema}givenName> ?username;				
+				<${namespaces.schema}text> ?msgtext.
 			}`, {
 					sources: [{
 						type: 'rdfjsSource',
@@ -725,6 +720,56 @@ class DeChatCore {
 
 		return deferred.promise;
 	}
+	
+	  async fileContainsChatInfo(fileUrl) {
+    const deferred = Q.defer();
+    const rdfjsSource = await rdfjsSourceFromUrl(fileUrl, this.fetch);
+    const engine = newEngine();
+
+    engine.query(`SELECT * {
+    OPTIONAL { ?s a <${namespaces.schema}InviteAction>.}
+    OPTIONAL { ?s a <${namespaces.schema}Message> ?o; <${namespaces.schema}text> ?t.}
+  }`,
+      {sources: [{type: 'rdfjsSource', value: rdfjsSource}]})
+      .then(function (result) {
+        result.bindingsStream.on('data', data => {
+			console.log(result);
+          deferred.resolve(true);
+        });
+
+        result.bindingsStream.on('end', function () {
+          deferred.resolve(false);
+        });
+      });
+
+    return deferred.promise;
+  }
+  
+   async getAllResourcesInInbox(inboxUrl) {
+    const deferred = Q.defer();
+    const resources = [];
+    const rdfjsSource = await rdfjsSourceFromUrl(inboxUrl, this.fetch);
+    const engine = newEngine();
+
+    engine.query(`SELECT ?resource {
+      ?resource a <http://www.w3.org/ns/ldp#Resource>.
+    }`,
+      { sources: [ { type: 'rdfjsSource', value: rdfjsSource } ] })
+      .then(function (result) {
+        result.bindingsStream.on('data', data => {
+          data = data.toObject();
+
+          const resource = data['?resource'].value;
+          resources.push(resource);
+        });
+
+        result.bindingsStream.on('end', function () {
+          deferred.resolve(resources);
+        });
+      });
+
+    return deferred.promise;
+  }
 
 }
 module.exports = DeChatCore;

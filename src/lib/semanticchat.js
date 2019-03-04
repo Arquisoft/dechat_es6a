@@ -44,6 +44,10 @@ class SemanticChat {
     return this.url;
   }
   
+  getInterlocutorWebId() {
+	  return this.interlocutorWebId;
+  }
+  
   loadMessage(messagetext, options) {
 
       this.lastMessage = {url: options.url, messagetext};

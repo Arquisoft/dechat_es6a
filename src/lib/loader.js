@@ -23,7 +23,7 @@ class Loader {
     const rdfjsSource = await this._getRDFjsSourceFromUrl(chatUrl);
     const sources = [{type: 'rdfjsSource', value: rdfjsSource}];
     const interlocutorWebId = await this.findWebIdOfInterlocutor(chatUrl, userWebId);
-	console.log(interlocutorWebId);
+	//console.log(interlocutorWebId);
 
     const lastMessage = new SemanticChat({
       url: chatUrl,
