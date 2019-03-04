@@ -663,11 +663,11 @@ class DeChatCore {
 		const messageUrl = await this.generateUniqueUrlForResource(userDataUrl);
 		const sparqlUpdate = `
 		<${messageUrl}> a <${namespaces.schema}Message>;
+		  <${namespaces.schema}givenName> <${username}>;
+		  <${namespaces.schema}dateCreated> <${time}>;
 		  <${namespaces.schema}text> <${message}>.
 	  `;
-		//<${namespaces.schema}author> <${username}>;
-		//<${namespaces.schema}dateCreated> <${time}>;
-
+		
 		try {
 			await dataSync.executeSPARQLUpdateForUser(userDataUrl, `INSERT DATA {${sparqlUpdate}}`);
 		} catch (e) {
