@@ -4,7 +4,7 @@
   "description": "Decentralized, solid-based chat",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "make test",
     "build:web": "webpack --config webpack.config.js",
     "doc": "./node_modules/.bin/jsdoc -c jsdoc.json ./lib"
   },
