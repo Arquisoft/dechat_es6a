@@ -412,7 +412,8 @@ class DeChatCore {
 
 			//<${namespaces.schema}dateCreated> ?time;
 			engine.query(`SELECT * {
-				?message <${namespaces.schema}givenName> ?username;				
+				 ?message a <${namespaces.schema}Message>;
+				<${namespaces.schema}givenName> ?username;				
 				<${namespaces.schema}text> ?msgtext.
   }`, {
 					sources: [{
