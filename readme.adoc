@@ -23,12 +23,16 @@ using the https://arc42.org/[arc42] templates.
 The source documents are located at
  https://github.com/Arquisoft/dechat_es6a/tree/master/src/docs[src/docs].
 
-Using https://maven.apache.org/[Maven] and the
-https://asciidoctor.org/[AsciiDoctor plugin] it is possible to generate
-the documentation running:
+To generate the documentation you have to install gulp:
 
 ----
-mvn generate-resources
+npm install -g gulp
+----
+
+Once installed, running gulp generates the documentation:
+
+----
+gulp
 ----
 
 == Compile and run
