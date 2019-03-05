@@ -163,9 +163,9 @@ $('#join-chat-btn').click(async() => {
 			// remove it from the array so it's no longer shown in the UI
 			chatsToJoin.splice(i, 1);
 
-			 
-			 interlocWebId = chat.friendWebId.id;
-			 await core.joinExistingChat(chat.invitationUrl, interlocWebId, userWebId, userDataUrl, dataSync, chat.fileUrl);
+
+			interlocWebId = chat.friendWebId.id;
+			await core.joinExistingChat(chat.invitationUrl, interlocWebId, userWebId, userDataUrl, dataSync, chat.fileUrl);
 			setUpChat();
 		} else {
 			$('#write-permission-url').text(userDataUrl);
@@ -187,8 +187,8 @@ function setUpForEveryChatOption() {
 $('#open-btn').click(async() => {
 	if (userWebId) {
 		afterChatOption();
-		
-		 const $tbody = $('#open-chat-table tbody');
+
+		const $tbody = $('#open-chat-table tbody');
 		$tbody.empty();
 
 		$('#open-chat-options').removeClass('hidden');
@@ -202,7 +202,7 @@ $('#open-btn').click(async() => {
 
 			chats.forEach(async chat => {
 				let agent = await core.getObjectFromPredicateForResource(chat.chatUrl, namespaces.schema + 'agent');
-				
+
 				const loader = new Loader(auth.fetch);
 				const friendWebId = await loader.findWebIdOfInterlocutor(chat.chatUrl, userWebId);
 				const friendName = await core.getFormattedName(friendWebId);
@@ -213,28 +213,29 @@ $('#open-btn').click(async() => {
             <td>${friendName}</td>
           </tr>`);
 
-        $row.click(function() {
-          $('#continue-chat-options').addClass('hidden');
-          const selectedChat = $(this).data('chat-url');
+				$row.click(function () {
+					$('#open-chat-options').addClass('hidden');
+					const selectedChat = $(this).data('chat-url');
 
-          let i = 0;
+					let i = 0;
 
-          while (i < chats.length && chats[i].chatUrl !== selectedChat) {
-            i ++;
-          }
+					while (i < chats.length && chats[i].chatUrl !== selectedChat) {
+						i++;
+					}
 
-          userDataUrl = chats[i].storeUrl;
+					userDataUrl = chats[i].storeUrl;
 
-          openExistingChat(selectedChat.split("#")[0]);
+					openExistingChat(selectedChat.split("#")[0]);
+				});
+				$tbody.append($row);
 			});
-			$tbody.append($row);
-		});  } else {
+		} else {
 			$('#no-open').removeClass('hidden');
 		}
 	} else {
 		$('#login-required').modal('show');
 	}
- });
+});
 
 /**
  * This method lets a player open an existing chess chat.
@@ -247,7 +248,9 @@ async function openExistingChat(chatUrl) {
 	const loader = new Loader(auth.fetch);
 	semanticChat = await loader.loadFromUrl(chatUrl, userWebId, userDataUrl);
 	console.log(chatUrl);
+	
 	interlocWebId = semanticChat.getInterlocutorWebId();
+	console.log("friend WebId is:" + interlocWebId);
 
 	setUpChat();
 }
@@ -264,7 +267,7 @@ $('.btn-cancel').click(() => {
 });
 
 async function setUpChat() {
-	if(semanticChat)
+	if (semanticChat)
 		semanticChat.getMessages().forEach(async(message) => {
 			$("#messagesarea").val($("#messagesarea").val() + "\n" + message.author + " [?]> " + message.messagetext);
 		});
@@ -277,7 +280,7 @@ async function setUpChat() {
 	const intName = await core.getFormattedName(interlocWebId);
 
 	$('#interlocutor-name').text(intName);
-	
+
 	const message = $("#message").val();
 	interlocutorMessages.forEach(async(message) => {
 		$("#messagesarea").val($("#messagesarea").val() + "\n" + intName + " [?]> " + message.messageTx);
@@ -313,38 +316,39 @@ $('#write-chat').click(async() => {
 async function checkForNotifications() {
 	//console.log('Checking for new notifications');
 
-	const updates = await core.checkUserInboxForUpdates(await core.getInboxUrl(userWebId));		//HECHO
+	const updates = await core.checkUserInboxForUpdates(await core.getInboxUrl(userWebId)); //HECHO
 
 	updates.forEach(async(fileurl) => {
-		
+
 		// check for new 
 		let newMessageFound = false;
 		console.log("Buscando nuevos mensajes");
 		let message = await core.getNewMessage(fileurl, userWebId);
 		//console.log(message);
-		if(message) {
+		if (message) {
 			console.log("Guardando mensajes");
 			interlocutorMessages.push(message);
 			newMessageFound = true;
-			if(openChat)
+			if (openChat)
 				$("#messagesarea").val($("#messagesarea").val() + "\n" + intName + " [?]> " + message.messageTx);
 		}
-		
-		if(!newMessageFound) {
-		console.log("Buscando respuesta a invitación");
-		const response = await core.getResponseToInvitation(fileurl);
-		if (response) {
-			console.log("Procesando respuesta");
-			this.processResponseInNotification(response, fileurl);
-		} else {
-			console.log("Buscar invitacion");
-			const convoToJoin = await core.getJoinRequest(fileurl, userWebId);
-			//console.log(convoToJoin);
-			if (convoToJoin) {
-				console.log("Procesando nuevo chat");
-				chatsToJoin.push(await core.processChatToJoin(convoToJoin, fileurl));
+
+		if (!newMessageFound) {
+			console.log("Buscando respuesta a invitación");
+			const response = await core.getResponseToInvitation(fileurl);
+			if (response) {
+				console.log("Procesando respuesta");
+				this.processResponseInNotification(response, fileurl);
+			} else {
+				console.log("Buscar invitacion");
+				const convoToJoin = await core.getJoinRequest(fileurl, userWebId);
+				//console.log(convoToJoin);
+				if (convoToJoin) {
+					console.log("Procesando nuevo chat");
+					chatsToJoin.push(await core.processChatToJoin(convoToJoin, fileurl));
+				}
 			}
-		} }
+		}
 	});
 	//console.log(interlocutorMessages);
 	//console.log(chatsToJoin);
@@ -358,24 +362,24 @@ async function checkForNotifications() {
  */
 async function processResponseInNotification(response, fileurl) {
 	const rsvpResponse = await core.getObjectFromPredicateForResource(response.responseUrl, namespaces.schema + 'rsvpResponse');
+	
 	let chatUrl = await core.getObjectFromPredicateForResource(response.invitationUrl, namespaces.schema + 'event');
 
 	if (chatUrl) {
 		chatUrl = chatUrl.value;
-		
+
 		if (semanticChat && semanticChat.getUrl() === chatUrl) {
 			if (rsvpResponse.value === namespaces.schema + 'RsvpResponseYes') {
 				//$('#real-time-setup .modal-body ul').append('<li>Invitation accepted</li><li>Setting up direct connection</li>');
-				webrtc.start();
+				//webrtc.start();
 			}
-		}
-		else {
+		} else {
 			let convoName = await core.getObjectFromPredicateForResource(chatUrl, namespaces.schema + 'name');
 
 			const loader = new Loader(auth.fetch);
 
-			//const friendWebId = await loader.findWebIdOfInterlocutor(chatUrl, userWebId);
-			const friendsName = "Unknown"; //await core.getFormattedName(friendWebId);
+			const friendWebId = await loader.findWebIdOfInterlocutor(chatUrl, userWebId);
+			const friendsName = await core.getFormattedName(friendWebId);
 
 			//show response in UI
 			if (!convoName) {
@@ -410,16 +414,16 @@ async function processResponseInNotification(response, fileurl) {
 
 		dataSync.deleteFileForUser(fileurl);
 	} else {
-		console.log(`No game url was found for response ${response.value}.`);
+		console.log(`No chat url was found for response ${response.value}.`);
 	}
 }
 
-$('#clear-inbox-btn').click(async () => {
-  const resources = await core.getAllResourcesInInbox(await core.getInboxUrl(userWebId));
-  
-  resources.forEach(async r => {
-    if (await core.fileContainsChatInfo(r)) {
-      dataSync.deleteFileForUser(r);
-    }
-  });
+$('#clear-inbox-btn').click(async() => {
+	const resources = await core.getAllResourcesInInbox(await core.getInboxUrl(userWebId));
+
+	resources.forEach(async r => {
+		if (await core.fileContainsChatInfo(r)) {
+			dataSync.deleteFileForUser(r);
+		}
+	});
 });

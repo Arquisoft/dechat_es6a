@@ -25,18 +25,17 @@ class Loader {
 			type: 'rdfjsSource',
 			value: rdfjsSource
 		}];
-		//const interlocutorWebId = await this.findWebIdOfInterlocutor(chatUrl, userWebId);
-		//console.log(interlocutorWebId);
+		const interlocutorWebId = await this.findWebIdOfInterlocutor(chatUrl, userWebId);
 
 		const chat = new SemanticChat({
 			url: chatUrl,
 			chatBaseUrl,
 			userWebId,
-			interlocutorWebId: null
+			interlocutorWebId
 		});
 
 		const messages = await this._findMessage(chatUrl);
-		//console.log(chatUrl);
+		console.log("friendWebId in loader.js is: " +interlocutorWebId);
 		console.log(messages);
 
 		messages.forEach(message => {
