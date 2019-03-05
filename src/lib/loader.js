@@ -10,164 +10,183 @@ const SemanticChat = require('./semanticchat');
  */
 class Loader {
 
-  /**
-   * This constructor creates an instance of Loader.
-   * @param fetch: the function used to fetch the data
-   */
-  constructor(fetch) {
-    this.engine = newEngine();
-    this.fetch = fetch;
-  }
-  
-  async loadFromUrl(chatUrl, userWebId, chatBaseUrl) {
-    const rdfjsSource = await this._getRDFjsSourceFromUrl(chatUrl);
-    const sources = [{type: 'rdfjsSource', value: rdfjsSource}];
-    //const interlocutorWebId = await this.findWebIdOfInterlocutor(chatUrl, userWebId);
-	//console.log(interlocutorWebId);
+	/**
+	 * This constructor creates an instance of Loader.
+	 * @param fetch: the function used to fetch the data
+	 */
+	constructor(fetch) {
+		this.engine = newEngine();
+		this.fetch = fetch;
+	}
 
-     const chat = new SemanticChat({
-       url: chatUrl,
-       chatBaseUrl,
-       userWebId,
-       interlocutorWebId: null
-     });
+	async loadFromUrl(chatUrl, userWebId, chatBaseUrl) {
+		const rdfjsSource = await this._getRDFjsSourceFromUrl(chatUrl);
+		const sources = [{
+			type: 'rdfjsSource',
+			value: rdfjsSource
+		}];
+		//const interlocutorWebId = await this.findWebIdOfInterlocutor(chatUrl, userWebId);
+		//console.log(interlocutorWebId);
 
-    const messages = await this._findMessage(chatUrl);
-	//console.log(chatUrl);
-	console.log(messages);
+		const chat = new SemanticChat({
+			url: chatUrl,
+			chatBaseUrl,
+			userWebId,
+			interlocutorWebId: null
+		});
 
-    messages.forEach(message => {
-      chat.loadMessage(message);
-    });
+		const messages = await this._findMessage(chatUrl);
+		//console.log(chatUrl);
+		console.log(messages);
 
-    return chat;
-  }
-  
-  async _findMessage(messageUrl) {
-    const deferred = Q.defer();
-    let results = [];
+		messages.forEach(message => {
+			chat.loadMessage(message);
+		});
 
-    const rdfjsSource = await this._getRDFjsSourceFromUrl(messageUrl);
-    let nextMessageFound = false;
+		return chat;
+	}
 
-    this.engine.query(`SELECT * {
+	async _findMessage(messageUrl) {
+		const deferred = Q.defer();
+		let results = [];
+
+		const rdfjsSource = await this._getRDFjsSourceFromUrl(messageUrl);
+		let nextMessageFound = false;
+
+		this.engine.query(`SELECT * {
 		?message a <${namespaces.schema}Message>;
 		<${namespaces.schema}givenName> ?username;				
-		<${namespaces.schema}text> ?msgtext. }`,
-      {sources: [{type: 'rdfjsSource', value: rdfjsSource}]})
-      .then(result => {
-        result.bindingsStream.on('data', async data => {
-          data = data.toObject();
-          if (data['?msgtext']) {
-            results.push({
-              messagetext: data['?msgtext'].value.split("/")[4],
-              url: data['?message'].value,
-			  author: data['?username'].value.split("/")[4]
-            });
-          }
-		  
-		  if (data['?nextMove']) {
-            nextMoveFound = true;
-            const t = await this._findMove(data['?nextMove'].value, namespaces.chess + 'nextHalfMove');
-            results = results.concat(t);
-          }
+		<${namespaces.schema}text> ?msgtext. }`, {
+				sources: [{
+					type: 'rdfjsSource',
+					value: rdfjsSource
+				}]
+			})
+			.then(result => {
+				result.bindingsStream.on('data', async data => {
+					data = data.toObject();
+					if (data['?msgtext']) {
+						results.push({
+							messagetext: data['?msgtext'].value.split("/")[4],
+							url: data['?message'].value,
+							author: data['?username'].value.split("/")[4]
+						});
+					}
 
-          deferred.resolve(results);
-        });
+					if (data['?nextMove']) {
+						nextMoveFound = true;
+						const t = await this._findMove(data['?nextMove'].value, namespaces.chess + 'nextHalfMove');
+						results = results.concat(t);
+					}
 
-        result.bindingsStream.on('end', function () {
-          if (!nextMessageFound) {
-            deferred.resolve(results);
-          }
-        });
-      });
+					deferred.resolve(results);
+				});
 
-    return deferred.promise;
-  }
-	
-  //NOT YET ID AT CHAT
-  async findWebIdOfInterlocutor(gameUrl, userWebId) {
-        const deferred = Q.defer();
+				result.bindingsStream.on('end', function () {
+					if (!nextMessageFound) {
+						deferred.resolve(results);
+					}
+				});
+			});
 
-        const rdfjsSource = await this._getRDFjsSourceFromUrl(gameUrl);
+		return deferred.promise;
+	}
 
-        this.engine.query(`SELECT LIMIT 100`,
-            {sources: [{type: 'rdfjsSource', value: rdfjsSource}]})
-            .then(function (result) {
-                result.bindingsStream.on('data', function (data) {
-                    const id = data.toObject()['?id'].value;
+	//NOT YET ID AT CHAT
+	async findWebIdOfInterlocutor(gameUrl, userWebId) {
+		const deferred = Q.defer();
 
-                    if (id !== userWebId) {
-                        deferred.resolve(id);
-                    }
-                });
+		const rdfjsSource = await this._getRDFjsSourceFromUrl(gameUrl);
 
-                result.bindingsStream.on('end', function () {
-                    deferred.resolve(null);
-                });
-            });
+		this.engine.query(`SELECT ?id { ?agentRole <${namespaces.rdf}type> ?friendRole;
+                   <${namespaces.chat}performedBy> ?id.
+                MINUS {?friendRole <${namespaces.chat}performedBy> <${userWebId}> .}} LIMIT 100`, {
+				sources: [{
+					type: 'rdfjsSource',
+					value: rdfjsSource
+				}]
+			})
+			.then(function (result) {
+				result.bindingsStream.on('data', function (data) {
+					const id = data.toObject()['?id'].value;
 
-        return deferred.promise;
-    }
-  
-  _getRDFjsSourceFromUrl(url) {
-    const deferred = Q.defer();
+					if (id !== userWebId) {
+						deferred.resolve(id);
+					}
+				});
 
-    this.fetch(url)
-      .then(async res => {
-        if (res.status === 404) {
-          deferred.reject(404);
-        } else {
-          const body = await res.text();
-          const store = N3.Store();
-          const parser = N3.Parser({baseIRI: res.url});
+				result.bindingsStream.on('end', function () {
+					deferred.resolve(null);
+				});
+			});
 
-          parser.parse(body, (err, quad, prefixes) => {
-            if (err) {
-              deferred.reject();
-            } else if (quad) {
-              store.addQuad(quad);
-            } else {
-              const source = {
-                match: function(s, p, o, g) {
-                  return streamify(store.getQuads(s, p, o, g));
-                }
-              };
+		return deferred.promise;
+	}
 
-              deferred.resolve(source);
-            }
-          });
-        }
-      });
+	_getRDFjsSourceFromUrl(url) {
+		const deferred = Q.defer();
 
-    return deferred.promise;
-  }
- 
-	
+		this.fetch(url)
+			.then(async res => {
+				if (res.status === 404) {
+					deferred.reject(404);
+				} else {
+					const body = await res.text();
+					const store = N3.Store();
+					const parser = N3.Parser({
+						baseIRI: res.url
+					});
+
+					parser.parse(body, (err, quad, prefixes) => {
+						if (err) {
+							deferred.reject();
+						} else if (quad) {
+							store.addQuad(quad);
+						} else {
+							const source = {
+								match: function (s, p, o, g) {
+									return streamify(store.getQuads(s, p, o, g));
+								}
+							};
+
+							deferred.resolve(source);
+						}
+					});
+				}
+			});
+
+		return deferred.promise;
+	}
+
+
 	async _getObjectFromPredicateForResource(url, predicate) {
-    const deferred = Q.defer();
-    const rdfjsSource = await this._getRDFjsSourceFromUrl(url);
-    const engine = newEngine();
+		const deferred = Q.defer();
+		const rdfjsSource = await this._getRDFjsSourceFromUrl(url);
+		const engine = newEngine();
 
-    engine.query(`SELECT ?o {
+		engine.query(`SELECT ?o {
     <${url}> <${predicate}> ?o.
-  }`,
-      {sources: [{type: 'rdfjsSource', value: rdfjsSource}]})
-      .then(function (result) {
-        result.bindingsStream.on('data', function (data) {
-          data = data.toObject();
+  }`, {
+				sources: [{
+					type: 'rdfjsSource',
+					value: rdfjsSource
+				}]
+			})
+			.then(function (result) {
+				result.bindingsStream.on('data', function (data) {
+					data = data.toObject();
 
-          deferred.resolve(data['?o']);
-        });
+					deferred.resolve(data['?o']);
+				});
 
-        result.bindingsStream.on('end', function () {
-          deferred.resolve(null);
-        });
-      });
+				result.bindingsStream.on('end', function () {
+					deferred.resolve(null);
+				});
+			});
 
-    return deferred.promise;
-  }
- 
+		return deferred.promise;
+	}
+
 }
 
 module.exports = Loader;

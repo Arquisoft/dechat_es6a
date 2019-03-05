@@ -201,16 +201,16 @@ $('#open-btn').click(async() => {
 			$('#open-chats').removeClass('hidden');
 
 			chats.forEach(async chat => {
-				//let agent = await core.getObjectFromPredicateForResource(chat.chatUrl, namespaces.schema + 'agent');
+				let agent = await core.getObjectFromPredicateForResource(chat.chatUrl, namespaces.schema + 'agent');
 				
 				const loader = new Loader(auth.fetch);
-				//const friendWebId = await loader.findWebIdOfOpponent(chat.chatUrl, userWebId);
-				//const friendName = await core.getFormattedName(friendWebId);
+				const friendWebId = await loader.findWebIdOfInterlocutor(chat.chatUrl, userWebId);
+				const friendName = await core.getFormattedName(friendWebId);
 
 				const $row = $(`
           <tr data-chat-url="${chat.chatUrl}" class='clickable-row'>
-            <td>Chat de</td>
-            <td>Desconocido</td>
+            <td>${friendWebId}</td>
+            <td>${friendName}</td>
           </tr>`);
 
         $row.click(function() {
