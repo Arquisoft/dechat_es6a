@@ -703,10 +703,11 @@ class DeChatCore {
 				})
 				.then(function (result) {
 					result.bindingsStream.on('data', async function (result) {
+						console.log(result);
 						messageFound = true;
 						result = result.toObject();
 						const messageUrl = result['?message'].value;
-						const messageTx = result['?msgtxt'].value.split("/inbox/")[1];
+						const messageTx = result['?msgtext'].value.split("/inbox/")[1];
 						deferred.resolve({messageTx});
 					});
 
