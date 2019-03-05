@@ -657,7 +657,6 @@ class DeChatCore {
 		const messageUrl = await this.generateUniqueUrlForResource(userDataUrl);
 		const sparqlUpdate = `
 		<${messageUrl}> a <${namespaces.schema}Message>;
-<<<<<<< HEAD
 		   <${namespaces.schema}givenName> <${username}>;
 		  <${namespaces.schema}text> <${message}>.
 	  `;
