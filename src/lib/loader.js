@@ -19,36 +19,79 @@ class Loader {
     this.fetch = fetch;
   }
   
-  async loadFromUrl(chatUrl, userWebId, messageBaseUrl) {
+  async loadFromUrl(chatUrl, userWebId, chatBaseUrl) {
     const rdfjsSource = await this._getRDFjsSourceFromUrl(chatUrl);
     const sources = [{type: 'rdfjsSource', value: rdfjsSource}];
-    const interlocutorWebId = await this.findWebIdOfInterlocutor(chatUrl, userWebId);
+    //const interlocutorWebId = await this.findWebIdOfInterlocutor(chatUrl, userWebId);
 	//console.log(interlocutorWebId);
 
-    const lastMessage = new SemanticChat({
-      url: chatUrl,
-      messageBaseUrl,
-      userWebId,
-      interlocutorWebId
-    });
+     const chat = new SemanticChat({
+       url: chatUrl,
+       chatBaseUrl,
+       userWebId,
+       interlocutorWebId: null
+     });
 
     const messages = await this._findMessage(chatUrl);
+	//console.log(chatUrl);
+	console.log(messages);
 
     messages.forEach(message => {
-      lastMessage.loadMessage(message.messagetext, {url: message.url});
+      chat.loadMessage(message);
     });
 
-    return lastMessage;
+    return chat;
+  }
+  
+  async _findMessage(messageUrl) {
+    const deferred = Q.defer();
+    let results = [];
+
+    const rdfjsSource = await this._getRDFjsSourceFromUrl(messageUrl);
+    let nextMessageFound = false;
+
+    this.engine.query(`SELECT * {
+		?message a <${namespaces.schema}Message>;
+		<${namespaces.schema}givenName> ?username;				
+		<${namespaces.schema}text> ?msgtext. }`,
+      {sources: [{type: 'rdfjsSource', value: rdfjsSource}]})
+      .then(result => {
+        result.bindingsStream.on('data', async data => {
+          data = data.toObject();
+          if (data['?msgtext']) {
+            results.push({
+              messagetext: data['?msgtext'].value.split("/")[4],
+              url: data['?message'].value,
+			  author: data['?username'].value.split("/")[4]
+            });
+          }
+		  
+		  if (data['?nextMove']) {
+            nextMoveFound = true;
+            const t = await this._findMove(data['?nextMove'].value, namespaces.chess + 'nextHalfMove');
+            results = results.concat(t);
+          }
+
+          deferred.resolve(results);
+        });
+
+        result.bindingsStream.on('end', function () {
+          if (!nextMessageFound) {
+            deferred.resolve(results);
+          }
+        });
+      });
+
+    return deferred.promise;
   }
 	
+  //NOT YET ID AT CHAT
   async findWebIdOfInterlocutor(gameUrl, userWebId) {
         const deferred = Q.defer();
 
         const rdfjsSource = await this._getRDFjsSourceFromUrl(gameUrl);
 
-        this.engine.query(`SELECT ?id { ?agentRole <${namespaces.rdf}type> ?playerRole;
-                   <${namespaces.chess}performedBy> ?id.
-                MINUS {?playerRole <${namespaces.chess}performedBy> <${userWebId}> .}} LIMIT 100`,
+        this.engine.query(`SELECT LIMIT 100`,
             {sources: [{type: 'rdfjsSource', value: rdfjsSource}]})
             .then(function (result) {
                 result.bindingsStream.on('data', function (data) {
@@ -124,44 +167,7 @@ class Loader {
 
     return deferred.promise;
   }
-  
-    async _findMessage(messageUrl) {
-    const deferred = Q.defer();
-    let results = [];
-
-    const rdfjsSource = await this._getRDFjsSourceFromUrl(messageUrl);
-    let nextMoveFound = false;
-
-    this.engine.query(`SELECT * {
-      OPTIONAL { <${messageUrl}> <${namespaces.schema}text> message. }
-    } LIMIT 100`,
-      {sources: [{type: 'rdfjsSource', value: rdfjsSource}]})
-      .then(result => {
-        result.bindingsStream.on('data', async data => {
-          data = data.toObject();
-
-          if (data['message']) {
-            results.push({
-              messagetext: data['message'].value,
-              url: messageUrl
-            });
-          }
-
-          deferred.resolve(results);
-        });
-
-        result.bindingsStream.on('end', function () {
-          if (!nextMoveFound) {
-            deferred.resolve(results);
-          }
-        });
-      });
-
-    return deferred.promise;
-  }
-	
-	
-
+ 
 }
 
 module.exports = Loader;

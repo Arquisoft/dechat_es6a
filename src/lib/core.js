@@ -155,7 +155,7 @@ class DeChatCore {
 
           result.bindingsStream.on('end', function () {
             Q.all(promises).then(() => {
-				console.log(chatUrls);
+				//console.log(chatUrls);
               deferred.resolve(chatUrls);
             });
           });
@@ -224,7 +224,7 @@ class DeChatCore {
 
 	async generateInvitation(baseUrl, chatUrl, userWebId, interlocutorWebId) {
 		const invitationUrl = await this.generateUniqueUrlForResource(baseUrl);
-		console.log(invitationUrl);
+		//console.log(invitationUrl);
 		const notification = `<${invitationUrl}> a <${namespaces.schema}InviteAction>.`;
 		const sparqlUpdate = `
     <${invitationUrl}> a <${namespaces.schema}InviteAction>;
@@ -662,7 +662,6 @@ class DeChatCore {
 		  <${namespaces.schema}text> <${message}>.
 	  `;
 	    //<${namespaces.schema}dateCreated> <${time}>;
-
 		try {
 			await dataSync.executeSPARQLUpdateForUser(userDataUrl, `INSERT DATA {${sparqlUpdate}}`);
 		} catch (e) {

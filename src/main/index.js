@@ -165,8 +165,7 @@ $('#join-chat-btn').click(async() => {
 
 			 
 			 interlocWebId = chat.friendWebId.id;
-			 semanticChat = await core.joinExistingChat(chat.invitationUrl, interlocWebId, userWebId, userDataUrl, dataSync, chat.fileUrl);
-			 console.log(semanticChat);
+			 await core.joinExistingChat(chat.invitationUrl, interlocWebId, userWebId, userDataUrl, dataSync, chat.fileUrl);
 			setUpChat();
 		} else {
 			$('#write-permission-url').text(userDataUrl);
@@ -226,7 +225,7 @@ $('#open-btn').click(async() => {
 
           userDataUrl = chats[i].storeUrl;
 
-          openExistingChat(selectedGame);
+          openExistingChat(selectedChat.split("#")[0]);
 			});
 			$tbody.append($row);
 		});  } else {
@@ -247,6 +246,7 @@ async function openExistingChat(chatUrl) {
 
 	const loader = new Loader(auth.fetch);
 	semanticChat = await loader.loadFromUrl(chatUrl, userWebId, userDataUrl);
+	console.log(chatUrl);
 	interlocWebId = semanticChat.getInterlocutorWebId();
 
 	setUpChat();
@@ -264,10 +264,15 @@ $('.btn-cancel').click(() => {
 });
 
 async function setUpChat() {
-	//const chat = semanticChat.getChat();
+	if(semanticChat)
+		semanticChat.getMessages().forEach(async(message) => {
+			$("#messagesarea").val($("#messagesarea").val() + "\n" + message.author + " [?]> " + message.messagetext);
+		});
 
 	$('#chat').removeClass('hidden');
 	$('#chat-loading').addClass('hidden');
+	$('#open-chats').addClass('hidden');
+	$('#open-chats-options').addClass('hidden');
 
 	const intName = await core.getFormattedName(interlocWebId);
 

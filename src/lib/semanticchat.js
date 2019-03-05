@@ -7,15 +7,15 @@ class SemanticChat {
     this.url = options.url;
     this.userWebId = options.userWebId;
     this.interlocutorWebId = options.interlocutorWebId;
-    this.messageBaseUrl = options.messageBaseUrl;
+    this.chatBaseUrl = options.chatBaseUrl;
 	this.messages = [];
 
     // if move base url is a string create function that returns this string
     // else a function so we leave it
-    if (typeof this.messageBaseUrl === 'string') {
-      const t = this.messageBaseUrl;
+    if (typeof this.chatBaseUrl === 'string') {
+      const t = this.chatBaseUrl;
 
-      this.messageBaseUrl = function() {
+      this.chatBaseUrl = function() {
         return t;
       }
     }
@@ -48,18 +48,13 @@ class SemanticChat {
 	  return this.interlocutorWebId;
   }
   
-  loadMessage(messagetext, options) {
-
-      this.lastMessage = {url: options.url, messagetext};
-	  
-	  messages.push(lastMessage);
-
-      return this.lastMessage;
+  loadMessage(message) {  
+	  this.messages.push(message);
   }
 	
 	
 	getMessages() {
-		return messages;
+		return this.messages;
 	}
 	
 	
