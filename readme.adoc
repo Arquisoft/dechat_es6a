@@ -26,7 +26,7 @@ The source documents are located at
 To generate the documentation you have to install gulp:
 
 ----
-npm install -g gulp
+npm install gulp
 ----
 
 Once installed, running gulp generates the documentation:
