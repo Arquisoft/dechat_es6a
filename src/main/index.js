@@ -264,6 +264,8 @@ $('.btn-cancel').click(() => {
 	$('#join-chat-options').addClass('hidden');
 	$('#open-chat-options').addClass('hidden');
 	$('#chat-options').removeClass('hidden');
+	
+	$("#messagesarea").val("");
 });
 
 async function setUpChat() {
