@@ -247,10 +247,10 @@ async function openExistingChat(chatUrl) {
 
 	const loader = new Loader(auth.fetch);
 	semanticChat = await loader.loadFromUrl(chatUrl, userWebId, userDataUrl);
-	console.log(chatUrl);
+	//console.log(chatUrl);
 	
-	interlocWebId = semanticChat.getInterlocutorWebId();
-	console.log("friend WebId is:" + interlocWebId);
+	//interlocWebId = semanticChat.getInterlocutorWebId();
+	//console.log("friend WebId is:" + interlocWebId);
 
 	setUpChat();
 }
@@ -267,10 +267,12 @@ $('.btn-cancel').click(() => {
 });
 
 async function setUpChat() {
-	if (semanticChat)
+	if (semanticChat) {
+		console.log(semanticChat.getMessages());
 		semanticChat.getMessages().forEach(async(message) => {
 			$("#messagesarea").val($("#messagesarea").val() + "\n" + message.author + " [?]> " + message.messagetext);
 		});
+	}
 
 	$('#chat').removeClass('hidden');
 	$('#chat-loading').addClass('hidden');

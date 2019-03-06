@@ -35,13 +35,13 @@ class Loader {
 		});
 
 		const messages = await this._findMessage(chatUrl);
-		console.log("friendWebId in loader.js is: " +interlocutorWebId);
-		console.log(messages);
-
-		messages.forEach(message => {
-			chat.loadMessage(message);
-		});
-
+		//console.log("friendWebId in loader.js is: " +interlocutorWebId);
+		//console.log(messages);
+		//console.log(messages.length);
+		
+		for (var i = 0, len = messages.length; i < len; i++) {
+			chat.loadMessage(messages[i]);
+		}	
 		return chat;
 	}
 
@@ -61,9 +61,10 @@ class Loader {
 					value: rdfjsSource
 				}]
 			})
-			.then(result => {
-				result.bindingsStream.on('data', async data => {
+			.then(function (result) {
+				result.bindingsStream.on('data', data => {
 					data = data.toObject();
+
 					if (data['?msgtext']) {
 						results.push({
 							messagetext: data['?msgtext'].value.split("/")[4],
@@ -71,20 +72,10 @@ class Loader {
 							author: data['?username'].value.split("/")[4]
 						});
 					}
-
-					if (data['?nextMove']) {
-						nextMoveFound = true;
-						const t = await this._findMove(data['?nextMove'].value, namespaces.chess + 'nextHalfMove');
-						results = results.concat(t);
-					}
-
-					deferred.resolve(results);
 				});
 
 				result.bindingsStream.on('end', function () {
-					if (!nextMessageFound) {
-						deferred.resolve(results);
-					}
+					deferred.resolve(results);
 				});
 			});
 

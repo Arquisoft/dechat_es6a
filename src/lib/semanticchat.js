@@ -7,6 +7,7 @@ class SemanticChat {
 		this.interlocutorWebId = options.interlocutorWebId;
 		this.chatBaseUrl = options.chatBaseUrl;
 		this.messages = [];
+		this.numberOfMessages = 0;
 
 		// if move base url is a string create function that returns this string
 		// else a function so we leave it
@@ -46,7 +47,8 @@ class SemanticChat {
 	}
 
 	loadMessage(message) {
-		this.messages.push(message);
+		this.messages[this.numberOfMessages] = message;
+		this.numberOfMessages += 1;
 	}
 
 

@@ -418,7 +418,7 @@ class DeChatCore {
 					}]
 				})
 				.then(function (result) {
-					console.log("SI");
+					//console.log("SI");
 					result.bindingsStream.on('data', async function (data) {
 						data = data.toObject();
 
