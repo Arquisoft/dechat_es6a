@@ -26,6 +26,7 @@ class Loader {
 			value: rdfjsSource
 		}];
 		const interlocutorWebId = await this.findWebIdOfInterlocutor(chatUrl, userWebId);
+		console.log(interlocutorWebId);
 
 		const chat = new SemanticChat({
 			url: chatUrl,
@@ -83,14 +84,15 @@ class Loader {
 	}
 
 	//NOT YET ID AT CHAT
-	async findWebIdOfInterlocutor(gameUrl, userWebId) {
+	async findWebIdOfInterlocutor(chatUrl, userWebId) {
 		const deferred = Q.defer();
 
-		const rdfjsSource = await this._getRDFjsSourceFromUrl(gameUrl);
+		const rdfjsSource = await this._getRDFjsSourceFromUrl(chatUrl);
+		console.log(chatUrl);
+		console.log(userWebId);
 
-		this.engine.query(`SELECT ?id { ?agentRole <${namespaces.rdf}type> ?friendRole;
-                   <${namespaces.chat}performedBy> ?id.
-                MINUS {?friendRole <${namespaces.chat}performedBy> <${userWebId}> .}} LIMIT 100`, {
+		this.engine.query(`SELECT * {
+			?rurl <${namespaces.schema}Person> ?webid.`, {
 				sources: [{
 					type: 'rdfjsSource',
 					value: rdfjsSource
@@ -98,7 +100,8 @@ class Loader {
 			})
 			.then(function (result) {
 				result.bindingsStream.on('data', function (data) {
-					const id = data.toObject()['?id'].value;
+					console.log("SI");
+					const id = data.toObject()['?webid'].value;
 
 					if (id !== userWebId) {
 						deferred.resolve(id);
@@ -106,6 +109,7 @@ class Loader {
 				});
 
 				result.bindingsStream.on('end', function () {
+					console.log("NO");
 					deferred.resolve(null);
 				});
 			});
