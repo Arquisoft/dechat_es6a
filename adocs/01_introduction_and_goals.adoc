@@ -1,0 +1,51 @@
+[[section-introduction-and-goals]]
+== Introduction and Goals
+
+
+****
+The goal of this project is to create a decentralized chat app (DeChat) based on link:https://github.com/solid/solid-spec[Solid specifications].
+
+In this document, we are describing relevant requirements of the project, quality goals for the software architecture and the relevant stakeholders and their expectations.
+****
+
+=== Requirements Overview
+
+
+****
+[options="header",cols="1,2"]
+|===
+| *Requirement* | *Description*
+| Decentralized arquitecture | The application will be separated from the data storage, and the users data will be stored in their own link:https://solid.inrupt.com/how-it-works[PODs].
+| Multimedia messages | Accompanying text messages, the app will allow users to send photos and videos. 
+| Group chats | Users can make a friends group to chat with all the members simoultaneosly.
+| Notifications | The app will send a notification when the user recives a message.
+|===
+****
+
+=== Quality Goals
+
+
+****
+[options="header",cols="1,2,2"]
+|===
+| *Goal* | *Description* | *Priority*
+| Efficiency | Messages will be sent instantly to ensure smooth communication. | High, high
+| Security | Only the members of a chat can see the messages of it. | High, medium
+| Usability | The application must be easy for non-technical people | High, medium
+|===
+The two values indicated in the priority mean, respectively, how important it is to success, and how difficult it is to achieve.
+****
+
+=== Stakeholders
+
+
+****
+[options="header",cols="1,2,2"]
+|===
+| *Role/Name* | *Description* | *Expectations*
+| DeChat users | Users of the developed app | Chat with a person or group of people owning their own data.
+| José Emilio Labra Gayo | Coordinator of the Software Architecture subject | Expects students to develop the requested application. 
+| Inrupt | Company interested in the application | Have a functional decentralized chat application following solid specifications.
+| Development team | Members of the team that developes the app | Develop a functional application that satisfies customer expectations.
+|===
+****
