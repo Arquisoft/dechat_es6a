@@ -190,6 +190,17 @@ class DeChatCore {
 			this.logger.error(`Could not save invitation for chat.`);
 			this.logger.error(e);
 		}
+		
+		const interlocutorUrl = await this.generateUniqueUrlForResource(userDataUrl);
+		const sparqlUpdateInt = `
+		<${interlocutorUrl}> <${namespaces.schema}Person> <${interlocutorWebId}>.
+	  `;
+		try {
+			await dataSync.executeSPARQLUpdateForUser(userDataUrl, `INSERT DATA {${sparqlUpdateInt}}`);
+		} catch (e) {
+			this.logger.error(`Could not save new message.`);
+			this.logger.error(e);
+		}
 
 		try {
 			await dataSync.sendToInterlocutorInbox(await this.getInboxUrl(interlocutorWebId), invitation.notification);
@@ -292,70 +303,6 @@ class DeChatCore {
 	}
 
 	/**
-	 * This method checks for new conversations in a notification.
-	 * @param semanticChat: the current semantic chat being used
-	 * @param userWebId: the WebId of the current user
-	 * @param fileurl: the url of file that contains the notification.
-	 * @param userDataUrl: the url where the new data is stored for the chat
-	 * @param dataSync: the DataSync instance used to save that to the POD
-	 * @param callback: the function with as parameters the san and url of the next move that is called at the end of this method
-	 * @returns {Promise<void>}
-	 */
-	async checkForNewMessage(semanticChat = null, userWebId, fileurl, userDataUrl, dataSync, callback) {
-		//TODO adapt this
-		const originalData = await this.getMessages(fileurl);
-		let chat = null;
-
-		if (originalData) {
-			let chatUrl = await this.getObjectFromPredicateForResource(originalData, namespaces.schema + 'subEvent');
-
-			if (!chatUrl) {
-
-				chatUrl = await this.getChatOfMessage(originalData);
-
-				if (chatUrl) {
-					console.error('DeChat: found by using Comunica directly, but not when using LDflex. Caching issue (reported).');
-				}
-			}
-
-			if (chatUrl) {
-				chatUrl = chatUrl.value;
-
-				chat = semanticChat;
-
-
-				let chatStorageUrl;
-
-				if (!chat || chat.getUrl() !== chatUrl) {
-					chatStorageUrl = await this.getStorageForChat(userWebId, chatUrl);
-
-					if (chatStorageUrl) {
-						const loader = new Loader(this.fetch);
-
-						chat = await loader.loadFromUrl(chatUrl, userWebId, chatStorageUrl); //Aquí se hallan los mensajes cargados
-
-					} else {
-						this.logger.debug(`No storage location is found for chat "${chatUrl}". Ignoring notification in ${fileurl}.`);
-					}
-				} else {
-					chatStorageUrl = userDataUrl;
-				}
-
-				//Mostrar mensajes cargados en ventana chat.
-				//Quizá devolver a index.js y que se realice alli sea más adecuado.
-
-				//Subir mensajes al POD de este otro usuario. Todo lo demás no nos es relevante	
-				//dataSync.executeSPARQLUpdateForUser(chatStorageUrl, update);
-
-
-
-
-			}
-		}
-		return chat.getMessages();
-	}
-
-	/**
 	 * This method returns the chat to which a message belongs.
 	 * @param moveUrl: the url of the move.
 	 * @returns {Promise}: a promise that returns the url of the chat (NamedNode) or null if none is found.
@@ -399,46 +346,7 @@ class DeChatCore {
 		return deferred.promise;
 	}
 
-	async getMessages(fileurl) {
-		const deferred = Q.defer();
-		const rdfjsSource = await rdfjsSourceFromUrl(fileurl, this.fetch);
-
-		if (rdfjsSource) {
-			const engine = newEngine();
-
-			//<${namespaces.schema}dateCreated> ?time;
-			engine.query(`SELECT * {
-				 ?message a <${namespaces.schema}Message>;
-				<${namespaces.schema}givenName> ?username;				
-				<${namespaces.schema}text> ?msgtext.
-  }`, {
-					sources: [{
-						type: 'rdfjsSource',
-						value: rdfjsSource
-					}]
-				})
-				.then(function (result) {
-					//console.log("SI");
-					result.bindingsStream.on('data', async function (data) {
-						data = data.toObject();
-
-						const messageUrl = data['?message'].value;
-						const messageTxt = data['?msgtext'].value;
-						let msgText = await self.getObjectFromPredicateForResource(messageUrl, namespaces.schema + 'text');
-						deferred.resolve(msgText);
-					});
-
-					result.bindingsStream.on('end', function () {
-						deferred.resolve(null);
-					});
-				});
-		} else {
-			console.log("NO");
-			deferred.resolve(null);
-		}
-
-		return deferred.promise;
-	}
+	
 
 	/**
 	 * This method returns the urls of the invitation and the ofriends response.
