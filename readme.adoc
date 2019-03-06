@@ -23,7 +23,7 @@ using the https://arc42.org/[arc42] templates.
 The source documents are located at
  https://github.com/Arquisoft/dechat_es6a/tree/master/src/docs[src/docs].
 
-To generate the documentation you have to install gulp:
+To generate the documentation, you have to install gulp:
 
 ----
 npm install gulp
@@ -37,14 +37,19 @@ gulp
 
 == Compile and run
 
-The skeleton project is a simple
- https://spring.io/projects/spring-boot[Spring-boot] application which can be run as:
+To run the application, you have to install http-server:
 
 ----
- mvn spring-boot:run
+ npm install http-server -g
 ----
 
-Once executed, the application should be available at: http://localhost:8080
+Then, run the command
+
+----
+http-server
+----
+
+It will shows some IP addresses where the application will be available.
 
 == Testing
 
