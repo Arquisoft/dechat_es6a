@@ -4,7 +4,7 @@ node_js:
 before_script:
 - npm install -g protractor
 - webdriver-manager update --standalone
-- webdriver-manager start
+- start /B webdriver-manager start
 - npm install -g http-server
-- http-server
+- start /B http-server
 after_success: npm run coverage
