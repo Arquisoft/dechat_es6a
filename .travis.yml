@@ -3,10 +3,8 @@ node_js:
 - "stable"
 before_script:
 - cd src
-- npm install
 - npm install -g protractor
 - npm install -g http-server
-- npm install -g mocha
 - http-server &
 - webdriver-manager update --standalone
 - webdriver-manager start &
