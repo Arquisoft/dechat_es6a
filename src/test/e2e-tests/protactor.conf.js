@@ -1,8 +1,8 @@
 exports.config  = {
     allScriptsTimeout   : 11000,
-        baseUrl             : 'http://localhost:9001/',
+        baseUrl             : 'http://192.168.1.42:8080/',
 	capabilities        : {
-    	browserName     : 'chrome'
+    	browserName     : 'firefox'
     },
     framework           : 'jasmine2',
         jasmineNodeOpts     : {
