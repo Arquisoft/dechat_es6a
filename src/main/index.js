@@ -201,20 +201,13 @@ $('#open-btn').click(async() => {
 			$('#open-chats').removeClass('hidden');
 
 			chats.forEach(async chat => {
-				//let agent = await core.getObjectFromPredicateForResource(chat.chatUrl, namespaces.schema + 'agent');
 				
-				//const convoToOpen = await core.getInterlocutor(chat.storeUrl, userWebId);
+				const friendName = await core.getFormattedName(chat.interlocutor);
 
-				
-				//const loader = new Loader(auth.fetch);
-				//console.log(chat);
-				//const friendWebId = await loader.findWebIdOfInterlocutor(chat.storeUrl, userWebId);
-				//const friendName = await core.getFormattedName(friendWebId);
-
-				//if(friendWebId) {
+				//if(friendName) {
 						const $row = $(`
 						  <tr data-chat-url="${chat.chatUrl}" class='clickable-row'>
-							<td>${chat.storeUrl}</td>
+							<td>Chat de ${friendName}</td>
 						  </tr>`);
 				//}
 
@@ -229,6 +222,8 @@ $('#open-btn').click(async() => {
 					}
 
 					userDataUrl = chats[i].storeUrl;
+					
+					interlocWebId = chat.interlocutor;
 
 					openExistingChat(selectedChat.split("#")[0]);
 				});
@@ -252,9 +247,8 @@ async function openExistingChat(chatUrl) {
 
 	const loader = new Loader(auth.fetch);
 	semanticChat = await loader.loadFromUrl(chatUrl, userWebId, userDataUrl);
-	//console.log(chatUrl);
 	
-	interlocWebId = semanticChat.getInterlocutorWebId();
+	//interlocWebId = semanticChat.getInterlocutorWebId();
 	console.log("friend WebId is:" + interlocWebId);
 
 	setUpChat();

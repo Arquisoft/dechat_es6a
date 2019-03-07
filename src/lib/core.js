@@ -132,8 +132,9 @@ class DeChatCore {
 			const chatUrls = [];
 			const promises = [];
 
-			engine.query(`SELECT ?chat ?url {
+			engine.query(`SELECT ?chat ?int ?url {
 			 ?chat <${namespaces.schema}contributor> <${webid}>;
+				<${namespaces.schema}recipient> ?int;
 				<${namespaces.storage}storeIn> ?url.
 		  }`, {
 					sources: [{
@@ -149,6 +150,7 @@ class DeChatCore {
 						chatUrls.push({
 							chatUrl: data['?chat'].value,
 							storeUrl: data['?url'].value,
+							interlocutor: data['?int'].value
 						});
 						deferred.resolve();
 					});
@@ -179,7 +181,9 @@ class DeChatCore {
 		const invitation2 = await this.generateInvitation(userDataUrl, semanticChat.getUrl(), userWebId, interlocutorWebId);
 
 		try {
-			await dataSync.executeSPARQLUpdateForUser(userWebId, `INSERT DATA { <${chatUrl}> <${namespaces.schema}contributor> <${userWebId}>; <${namespaces.storage}storeIn> <${userDataUrl}>.}`);
+			await dataSync.executeSPARQLUpdateForUser(userWebId, `INSERT DATA { <${chatUrl}> <${namespaces.schema}contributor> <${userWebId}>; 
+			<${namespaces.schema}recipient> <${interlocutorWebId}>;
+			<${namespaces.storage}storeIn> <${userDataUrl}>.}`);
 		} catch (e) {
 			this.logger.error(`Could not add chat to WebId.`);
 			this.logger.error(e);
