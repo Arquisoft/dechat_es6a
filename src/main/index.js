@@ -201,18 +201,12 @@ $('#open-btn').click(async() => {
 			$('#open-chats').removeClass('hidden');
 
 			chats.forEach(async chat => {
-				//let agent = await core.getObjectFromPredicateForResource(chat.chatUrl, namespaces.schema + 'agent');
-				
-				//const convoToOpen = await core.getInterlocutor(chat.storeUrl, userWebId);
-
-				
 				//const loader = new Loader(auth.fetch);
-				//console.log(chat);
 				//const friendWebId = await loader.findWebIdOfInterlocutor(chat.storeUrl, userWebId);
 				//const friendName = await core.getFormattedName(friendWebId);
 
 				//if(friendWebId) {
-						const $row = $(`
+				const $row = $(`
 						  <tr data-chat-url="${chat.chatUrl}" class='clickable-row'>
 							<td>${chat.storeUrl}</td>
 						  </tr>`);
@@ -253,7 +247,7 @@ async function openExistingChat(chatUrl) {
 	const loader = new Loader(auth.fetch);
 	semanticChat = await loader.loadFromUrl(chatUrl, userWebId, userDataUrl);
 	//console.log(chatUrl);
-	
+
 	interlocWebId = semanticChat.getInterlocutorWebId();
 	console.log("friend WebId is:" + interlocWebId);
 
@@ -269,7 +263,7 @@ $('.btn-cancel').click(() => {
 	$('#join-chat-options').addClass('hidden');
 	$('#open-chat-options').addClass('hidden');
 	$('#chat-options').removeClass('hidden');
-	
+
 	$("#messagesarea").val("");
 });
 
@@ -328,7 +322,7 @@ async function checkForNotifications() {
 	const updates = await core.checkUserInboxForUpdates(await core.getInboxUrl(userWebId)); //HECHO
 
 	updates.forEach(async(fileurl) => {
-		
+
 		console.log(fileurl);
 
 		// check for new 
@@ -373,7 +367,7 @@ async function checkForNotifications() {
  */
 async function processResponseInNotification(response, fileurl) {
 	const rsvpResponse = await core.getObjectFromPredicateForResource(response.responseUrl, namespaces.schema + 'rsvpResponse');
-	
+
 	let chatUrl = await core.getObjectFromPredicateForResource(response.invitationUrl, namespaces.schema + 'event');
 
 	if (chatUrl) {
