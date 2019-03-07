@@ -3,6 +3,7 @@ node_js:
 - "stable"
 before_script:
 - cd src
+- npm install
 - npm install -g protractor
 - npm install -g http-server
 - http-server &
