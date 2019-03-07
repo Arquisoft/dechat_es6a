@@ -3,6 +3,8 @@ node_js:
 - "stable"
 before_script:
 - npm install -g protractor
-- webpack-manager update --standalone
-- webpack-manager start
+- webdriver-manager update --standalone
+- webdriver-manager start
+- npm install -g http-server
+- http-server
 after_success: npm run coverage
