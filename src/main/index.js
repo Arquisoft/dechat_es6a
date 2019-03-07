@@ -202,20 +202,21 @@ $('#open-btn').click(async() => {
 
 			chats.forEach(async chat => {
 				//let agent = await core.getObjectFromPredicateForResource(chat.chatUrl, namespaces.schema + 'agent');
+				
+				//const convoToOpen = await core.getInterlocutor(chat.storeUrl, userWebId);
 
 				
-				const loader = new Loader(auth.fetch);
-				console.log(chat);
-				const friendWebId = await loader.findWebIdOfInterlocutor(chat.storeUrl, userWebId);
-				const friendName = await core.getFormattedName(friendWebId);
+				//const loader = new Loader(auth.fetch);
+				//console.log(chat);
+				//const friendWebId = await loader.findWebIdOfInterlocutor(chat.storeUrl, userWebId);
+				//const friendName = await core.getFormattedName(friendWebId);
 
-				if(friendWebId) {
+				//if(friendWebId) {
 						const $row = $(`
-				  <tr data-chat-url="${chat.chatUrl}" class='clickable-row'>
-					<td>${friendWebId}</td>
-					<td>${friendName}</td>
-				  </tr>`);
-				}
+						  <tr data-chat-url="${chat.chatUrl}" class='clickable-row'>
+							<td>${chat.storeUrl}</td>
+						  </tr>`);
+				//}
 
 				$row.click(function () {
 					$('#open-chat-options').addClass('hidden');
@@ -327,6 +328,8 @@ async function checkForNotifications() {
 	const updates = await core.checkUserInboxForUpdates(await core.getInboxUrl(userWebId)); //HECHO
 
 	updates.forEach(async(fileurl) => {
+		
+		console.log(fileurl);
 
 		// check for new 
 		let newMessageFound = false;

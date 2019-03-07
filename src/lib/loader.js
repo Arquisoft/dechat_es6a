@@ -25,14 +25,14 @@ class Loader {
 			type: 'rdfjsSource',
 			value: rdfjsSource
 		}];
-		const interlocutorWebId = await this.findWebIdOfInterlocutor(chatUrl, userWebId);
-		console.log(interlocutorWebId);
+		//const interlocutorWebId = await this.findWebIdOfInterlocutor(chatUrl, userWebId);
+		//console.log(interlocutorWebId);
 
 		const chat = new SemanticChat({
 			url: chatUrl,
 			chatBaseUrl,
-			userWebId,
-			interlocutorWebId
+			userWebId
+			//interlocutorWebId
 		});
 
 		const messages = await this._findMessage(chatUrl);
@@ -92,13 +92,14 @@ class Loader {
 		console.log(userWebId);
 
 		this.engine.query(`SELECT * {
-			?rurl <${namespaces.schema}Person> ?webid.`, {
+			?rurl <${namespaces.schema}agent> ?webid.`, {
 				sources: [{
 					type: 'rdfjsSource',
 					value: rdfjsSource
 				}]
 			})
 			.then(function (result) {
+				console.log(result);
 				result.bindingsStream.on('data', function (data) {
 					console.log("SI");
 					const id = data.toObject()['?webid'].value;
@@ -113,7 +114,7 @@ class Loader {
 					deferred.resolve(null);
 				});
 			});
-
+		console.log(deferred.promise);
 		return deferred.promise;
 	}
 

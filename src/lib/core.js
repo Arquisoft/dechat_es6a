@@ -176,6 +176,7 @@ class DeChatCore {
 			interlocutorWebId
 		});
 		const invitation = await this.generateInvitation(userDataUrl.replace("/private/", "/public/"), semanticChat.getUrl(), userWebId, interlocutorWebId);
+		const invitation2 = await this.generateInvitation(userDataUrl, semanticChat.getUrl(), userWebId, interlocutorWebId);
 
 		try {
 			await dataSync.executeSPARQLUpdateForUser(userWebId, `INSERT DATA { <${chatUrl}> <${namespaces.schema}contributor> <${userWebId}>; <${namespaces.storage}storeIn> <${userDataUrl}>.}`);
@@ -186,19 +187,10 @@ class DeChatCore {
 
 		try {
 			await dataSync.executeSPARQLUpdateForUser(userDataUrl.replace("/private/", "/public/"), `INSERT DATA {${invitation.sparqlUpdate}}`);
+			
+			await dataSync.executeSPARQLUpdateForUser(userDataUrl, `INSERT DATA {${invitation2.sparqlUpdate}}`);
 		} catch (e) {
 			this.logger.error(`Could not save invitation for chat.`);
-			this.logger.error(e);
-		}
-		
-		const interlocutorUrl = await this.generateUniqueUrlForResource(userDataUrl);
-		const sparqlUpdateInt = `
-		<${interlocutorUrl}> <${namespaces.schema}Person> <${interlocutorWebId}>.
-	  `;
-		try {
-			await dataSync.executeSPARQLUpdateForUser(userDataUrl, `INSERT DATA {${sparqlUpdateInt}}`);
-		} catch (e) {
-			this.logger.error(`Could not save new message.`);
 			this.logger.error(e);
 		}
 
@@ -454,6 +446,53 @@ class DeChatCore {
 								invitationUrl
 							});
 						}
+					});
+
+					result.bindingsStream.on('end', function () {
+						if (!invitationFound) {
+							console.log("NO");
+							deferred.resolve(null);
+						}
+					});
+				});
+		} else {
+			deferred.resolve(null);
+		}
+
+		return deferred.promise;
+	}
+	
+	async getInterlocutor(fileurl, userWebId) {
+		const deferred = Q.defer();
+		const rdfjsSource = await rdfjsSourceFromUrl(fileurl, this.fetch);
+		console.log(fileurl);
+
+		if (rdfjsSource) {
+			const engine = newEngine();
+			let invitationFound = false;
+			const self = this;
+
+			engine.query(`SELECT * {
+		?invitation a <${namespaces.schema}InviteAction>;
+	<${namespaces.schema}agent> ?sender;
+	<${namespaces.schema}event> ?chaturl; 
+	<${namespaces.schema}recipient> ?interlocutor. 
+  }`, {
+					sources: [{
+						type: 'rdfjsSource',
+						value: rdfjsSource
+					}]
+				})
+				.then(function (result) {
+					console.log(result);
+					result.bindingsStream.on('data', async function (result) {
+
+						invitationFound = true;
+						result = result.toObject();		
+
+							deferred.resolve(
+								result['?interlocutor'].value
+							);			
 					});
 
 					result.bindingsStream.on('end', function () {
