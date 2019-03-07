@@ -23,7 +23,7 @@
     "minami": "^1.2.3",
     "webpack": "^4.23.1",
     "webpack-cli": "^3.1.2",
-    "geckodriver": "^1.10.0"
+    "geckodriver": "^1.10.0",
     "selenium": "^2.20.0"
   },
   "dependencies": {
