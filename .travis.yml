@@ -7,4 +7,5 @@ before_script:
 - http-server &
 - webdriver-manager update --standalone
 - webdriver-manager start &
+script: npm test
 after_success: npm run coverage
