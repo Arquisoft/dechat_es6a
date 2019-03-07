@@ -1,7 +1,5 @@
 'use strict'
 
-var path = require( 'C:\Program Files\nodejs\' );
-
 browser.get( '/' );
 
 describe( 'dechat interactions', function () {
