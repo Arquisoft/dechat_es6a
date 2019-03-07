@@ -1,4 +1,7 @@
 language: node_js
 node_js:
 - "stable"
+before_script:
+- webpack-manager update --standalone
+- webpack-manager start
 after_success: npm run coverage
