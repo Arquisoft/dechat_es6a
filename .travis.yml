@@ -7,8 +7,7 @@ before_script:
 - npm install -g http-server
 - http-server &
 - webdriver-manager update --standalone
-- webdriver-manager start
-- ^Z
-- bg
+- webdriver-manager start &
+- npm install -g mocha
 script: npm test
 after_success: npm run coverage
