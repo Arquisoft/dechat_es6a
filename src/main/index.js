@@ -204,12 +204,10 @@ $('#open-btn').click(async() => {
 				
 				const friendName = await core.getFormattedName(chat.interlocutor);
 
-				//if(friendName) {
-						const $row = $(`
+				const $row = $(`
 						  <tr data-chat-url="${chat.chatUrl}" class='clickable-row'>
 							<td>Chat de ${friendName}</td>
 						  </tr>`);
-				//}
 
 				$row.click(function () {
 					$('#open-chat-options').addClass('hidden');
@@ -247,9 +245,8 @@ async function openExistingChat(chatUrl) {
 
 	const loader = new Loader(auth.fetch);
 	semanticChat = await loader.loadFromUrl(chatUrl, userWebId, userDataUrl);
-	
-	//interlocWebId = semanticChat.getInterlocutorWebId();
-	console.log("friend WebId is:" + interlocWebId);
+
+	//console.log(chatUrl);
 
 	setUpChat();
 }
@@ -263,7 +260,7 @@ $('.btn-cancel').click(() => {
 	$('#join-chat-options').addClass('hidden');
 	$('#open-chat-options').addClass('hidden');
 	$('#chat-options').removeClass('hidden');
-	
+
 	$("#messagesarea").val("");
 });
 
@@ -322,20 +319,20 @@ async function checkForNotifications() {
 	const updates = await core.checkUserInboxForUpdates(await core.getInboxUrl(userWebId)); //HECHO
 
 	updates.forEach(async(fileurl) => {
-		
+
 		console.log(fileurl);
 
 		// check for new 
 		let newMessageFound = false;
 		console.log("Buscando nuevos mensajes");
-		let message = await core.getNewMessage(fileurl, userWebId);
+		let message = await core.getNewMessage(fileurl, userWebId, dataSync);
 		//console.log(message);
 		if (message) {
 			console.log("Guardando mensajes");
 			interlocutorMessages.push(message);
 			newMessageFound = true;
 			if (openChat)
-				$("#messagesarea").val($("#messagesarea").val() + "\n" + intName + " [?]> " + message.messageTx);
+				$("#messagesarea").val($("#messagesarea").val() + "\n" + message.author + " [?]> " + message.messageTx);
 		}
 
 		if (!newMessageFound) {
@@ -350,6 +347,7 @@ async function checkForNotifications() {
 				//console.log(convoToJoin);
 				if (convoToJoin) {
 					console.log("Procesando nuevo chat");
+					console.log(convoToJoin);
 					chatsToJoin.push(await core.processChatToJoin(convoToJoin, fileurl));
 				}
 			}
@@ -367,7 +365,7 @@ async function checkForNotifications() {
  */
 async function processResponseInNotification(response, fileurl) {
 	const rsvpResponse = await core.getObjectFromPredicateForResource(response.responseUrl, namespaces.schema + 'rsvpResponse');
-	
+
 	let chatUrl = await core.getObjectFromPredicateForResource(response.invitationUrl, namespaces.schema + 'event');
 
 	if (chatUrl) {

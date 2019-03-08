@@ -548,10 +548,23 @@ class DeChatCore {
 	}
 
 	async joinExistingChat(invitationUrl, interlocutorWebId, userWebId, userDataUrl, dataSync, fileUrl) {
+		
 		const response = await this.generateResponseToInvitation(userDataUrl, invitationUrl, userWebId, interlocutorWebId, "yes");
 
 		dataSync.sendToInterlocutorInbox(await this.getInboxUrl(interlocutorWebId), response.notification);
-		//dataSync.deleteFileForUser(fileUrl);
+		
+		const chatUrl = await this.generateUniqueUrlForResource(userDataUrl);
+		
+		try {
+			await dataSync.executeSPARQLUpdateForUser(userWebId, `INSERT DATA { <${chatUrl}> <${namespaces.schema}contributor> <${userWebId}>; 
+			<${namespaces.schema}recipient> <${interlocutorWebId}>;
+			<${namespaces.storage}storeIn> <${userDataUrl}>.}`);
+		} catch (e) {
+			this.logger.error(`Could not add chat to WebId.`);
+			this.logger.error(e);
+		}
+		
+		dataSync.deleteFileForUser(fileUrl);
 	}
 
 	async generateResponseToInvitation(baseUrl, invitationUrl, userWebId, interlocutorWebId, response) {
@@ -603,9 +616,9 @@ class DeChatCore {
 	async storeMessage(userDataUrl, username, userWebId, time, message, interlocutorWebId, dataSync, toSend) {
 
 		const messageUrl = await this.generateUniqueUrlForResource(userDataUrl);
-		const sparqlUpdate = `
+				const sparqlUpdate = `
 		<${messageUrl}> a <${namespaces.schema}Message>;
-		   <${namespaces.schema}givenName> <${username}>;
+		  <${namespaces.schema}givenName> <${username}>;
 		  <${namespaces.schema}text> <${message}>.
 	  `;
 		//<${namespaces.schema}dateCreated> <${time}>;
@@ -629,7 +642,7 @@ class DeChatCore {
 
 	}
 
-	async getNewMessage(fileurl, userWebId) {
+	async getNewMessage(fileurl, userWebId,dataSync) {
 		const deferred = Q.defer();
 		const rdfjsSource = await rdfjsSourceFromUrl(fileurl, this.fetch);
 		if (rdfjsSource) {
@@ -638,9 +651,9 @@ class DeChatCore {
 			const self = this;
 			//<${namespaces.schema}dateCreated> ?time;
 			engine.query(`SELECT * {
-				 ?message a <${namespaces.schema}Message>;
-				<${namespaces.schema}givenName> ?username;				
-				<${namespaces.schema}text> ?msgtext.
+				?message a <${namespaces.schema}Message>;
+					<${namespaces.schema}givenName> ?username;
+					<${namespaces.schema}text> ?msgtext.
 			}`, {
 					sources: [{
 						type: 'rdfjsSource',
@@ -648,14 +661,18 @@ class DeChatCore {
 					}]
 				})
 				.then(function (result) {
+					console.log(result);
 					result.bindingsStream.on('data', async function (result) {
-						console.log(result);
+						//console.log(result);
 						messageFound = true;
 						result = result.toObject();
 						const messageUrl = result['?message'].value;
 						const messageTx = result['?msgtext'].value.split("/inbox/")[1];
+						const author = result['?username'].value;
 						deferred.resolve({
-							messageTx
+							messageTx,
+							messageUrl,
+							author
 						});
 					});
 
@@ -668,6 +685,8 @@ class DeChatCore {
 		} else {
 			deferred.resolve(null);
 		}
+		
+		dataSync.deleteFileForUser(fileurl);
 
 		return deferred.promise;
 	}
