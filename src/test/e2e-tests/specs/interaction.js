@@ -15,3 +15,12 @@ describe( 'dechat interactions', function () {
         });
     });
 });
+
+describe( 'dechat interactions', function () {
+    it ( 'Check login button text ', function () {
+            var btnLogin = element(by.id('nav-login-btn'));
+            expect(btnLogin.getText()).toEqual('Log in');
+        });
+    });
+});
+
