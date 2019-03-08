@@ -1,0 +1,10 @@
+[[section-building-block-view]]
+
+
+== Building Block View
+
+****
+.Disclaimer
+At the current stage of the project, there is not enough information available to complete this section.
+Further decisions are required in order to provide any substantial data on this subject.
+****

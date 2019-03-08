@@ -1,0 +1,23 @@
+[[section-glossary]]
+== Glossary
+
+
+****
+In this glossary, you will find a list of words relating to this project and link:https://solid.inrupt.com/about[SOLID].
+****
+
+[options="header"]
+|===
+| Term         | Definition
+| Decentralized Web     | it refers to a series of technologies that replace or augment current communication protocols, networks, and services and distribute them in a way that is robust *against single-actor control* or *censorship*.
+| FOAF     | _**F**riend **O**f **A** **F**riend_ is an *RDF* based schema to describe persons and their social network in a semantic way (_in links to put it in simple words_). It could get used within many wikis for annotating user pages, or describing articles about people.
+| Linked Data | it is used to describe a method of exposing and connecting data on the Web from different sources. *Currently*, the Web uses hypertext links that allow people to move from one document to another.
+| POD     | _**P**ersonal **O**nline **D**ata_ is where *all* the data is stored _Photos or Videos you take, comments you write, contacts in your address book, calendar events,...etc_. *You* give people and your apps *permission* to read or change them.
+| Profile | is all the information related to the user including the _full name_, _phone number_ , _personal inbox_ , _storage_,...etc.
+| RDF    | _**R**esource **D**escription **F**ramework_ is a specification that defines how metadata, or descriptive information, should be formatted. This means the data can be transmitted in various syntaxes like *JSON-LD* (_JSON with a "context"_)
+| Solid        | _**So**cial **L**inked **D**ata_ is a proposed set of conventions and tools for building *decentralized* Web applications based on *Linked Data* principles.
+| Stakeholder     | is a person or group of people with an interest or concern in something, in this case, *this project*. It can be a _technical_ or _non technical_ user, _a company_, _developers_ or even , in our case, link:https://labra.solid.community[_our professor_] .
+| User   | is a person who uses/owns a Solid *Pod*.
+| WebID     | is a standardized *method* for *internet* services and members to know *who* they are *communicating* with.
+
+|===
