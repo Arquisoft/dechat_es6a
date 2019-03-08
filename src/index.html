@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>Decentralized Chat - 6A</title>
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.4.2/css/all.css" integrity="sha384-/rXc/GQVaYpyDdyxK+ecHPVYJSN9bmVFBvjA/9eOB+pb3F2w2N6fc5qB9Ew5yIns" crossorigin="anonymous">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+<link rel="stylesheet" href="main/resources/static/css/main.css">
+</head>
+<body vocab="http://schema.org/">
+<div class="container">
+   <nav class="navbar navbar-expand-lg navbar-dark bg-dark"> <span class="navbar-brand">Decentralized Chat</span>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"> <span class="navbar-toggler-icon"></span> </button>
+      <div class="navbar-collapse collapse w-100 order-3 dual-collapse2" id="navbarSupportedContent">
+         <ul class="navbar-nav ml-auto">
+            <li>
+               <button id="nav-login-btn" class="login-btn btn btn-dark my-2 my-sm-0" type="button">Log in</button>
+            </li>
+            <li id="user-menu" class="nav-item dropdown"> <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> <i class="fas fa-user"></i> <span id="user-name"></span> </a>
+               <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                  <button id="clear-inbox-btn" class="dropdown-item btn btn-outline-danger my-2 my-sm-0" type="button">Clear inbox <i class="fas fa-exclamation-triangle"></i></button>
+                  <button id="logout-btn" class="dropdown-item btn btn-outline-success my-2 my-sm-0" type="button">Log out</button>
+               </div>
+            </li>
+         </ul>
+      </div>
+   </nav>
+   <div id="content" class="row justify-content-center align-items-center">
+      <div id="chat-options" class="col-6 text-center">
+         <button id="new-btn" type="button" class="btn btn-dark btn-lg"> New chat</button>
+         <button id="join-btn" type="button" class="btn btn-dark btn-lg">Join chat</button>
+         <button id="open-btn" type="button" class="btn btn-dark btn-lg">Open chat</button>
+      </div>
+      
+      <!--New chat-->
+      <div id="new-chat-options" class="col-6 hidden">
+         <form>
+            <div class="form-group">
+               <label for="contacts">Open chat with</label>
+               <select id="contacts">
+               </select>
+            </div>
+            <div class="form-group">
+               <label for="data-url">Path on your POD to store the chat</label>
+               <input type="text" class="form-control rounded-0" id="data-url" aria-describedby="pathHelp" placeholder="Enter path">
+            </div>
+            <button id="start-new-chat-btn" type="button" class="btn btn-dark">Start chat</button>
+            <button type="button" class="btn-cancel btn btn-dark">Cancel</button>
+         </form>
+      </div>
+      <!--Join chat-->
+      <div id="join-chat-options" class="col-6 hidden">
+         <div id="join-loading"> <span id="join-looking">Looking for chat invites...</span> <span id="no-join" class="hidden">No chats to join were found.</span>
+            <div class="form-group">
+               <button type="button" class="btn-cancel btn btn-dark">Cancel</button>
+            </div>
+         </div>
+         <form id="join-form" class="hidden">
+            <div class="form-group">
+               <label for="chat-urls">Chat you wish to join</label>
+               <select id="chat-urls">
+               </select>
+            </div>
+            <div class="form-group">
+               <label for="join-data-url">Path on your POD to store the chat</label>
+               <input type="text" class="form-control rounded-0" id="join-data-url" aria-describedby="pathHelp2" placeholder="Enter path">
+               <small id="pathHelp2" class="form-text">This is the path of the file on your Solid POD where your personal chat data will be stored.</small> </div>
+            <button id="join-chat-btn" type="button" class="btn btn-dark">Join</button>
+            <button type="button" class="btn-cancel btn btn-dark">Cancel</button>
+         </form>
+      </div>
+      
+      <!--open chat-->
+      <div id="open-chat-options" class="col-6 hidden">
+         <div id="open-loading"> <span id="open-looking">Looking for chats to open...</span> <span id="no-open" class="hidden">No conversations to join were found.</span> 
+            <!--No chats-->
+            <div class="form-group">
+               <button type="button" class="btn-cancel btn btn-dark">Cancel</button>
+            </div>
+         </div>
+         <!--Affirmative-->
+         <div id="open-chats" class="hidden"> <span>Select the conversation that you want to open</span>
+            <table id="open-chat-table" class="table table-hover">
+               <thead>
+                  <tr>
+                     <th scope="col" id="table-title" >Chat</th>
+                  </tr>
+               </thead>
+               <tbody>
+               </tbody>
+            </table>
+            <button type="button" class="btn-cancel btn btn-dark">Cancel</button>
+         </div>
+      </div>
+      <!--END open chat--> 
+      
+      <!--Loading-->
+      <div id="chat-loading" class="hidden"> <span>Loading your conversation...</span> </div>
+      <!--END Loading-->
+      
+      <div id="chat" class="hidden" >
+         <p>Talking to <span id="interlocutor-name"></span></p>
+         <div id="messages" style="width: 400px">
+            <textarea id="messagesarea" rows="10" cols="50">
+				 Chat initialised. Awaiting interlocutor.</textarea>
+         </div>
+         <input type="text" class="form-control rounded-0" id="message" placeholder="Write a message: ">
+         <button id="write-chat" type="button" class="btn btn-dark">Send</button>
+         <button id="leave-chat" type="button" class="btn btn-cancel btn-dark">Leave</button>
+      </div>
+   </div>
+   
+   <!--Login Control-->
+   
+   <div class="modal fade" id="login-required" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+         <div class="modal-content">
+            <div class="modal-header">
+               <h5 class="modal-title" id="exampleModalLabel">Login required</h5>
+               <button type="button" class="close" data-dismiss="modal" aria-label="Close"> <span aria-hidden="true">&times;</span> </button>
+            </div>
+            <div class="modal-body"> Please login to start a chat. </div>
+            <div class="modal-footer">
+               <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+               <button type="button" class="login-btn btn btn-dark">Login</button>
+            </div>
+         </div>
+      </div>
+   </div>
+	
+   <!--Permissions-->
+   
+   <div class="modal fade" id="write-permission" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel2" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+         <div class="modal-content">
+            <div class="modal-header">
+               <h5 class="modal-title" id="exampleModalLabel2">Write permission required</h5>
+               <button type="button" class="close" data-dismiss="modal" aria-label="Close"> <span aria-hidden="true">&times;</span> </button>
+            </div>
+            <div class="modal-body"> You don't have write permission for <span id="write-permission-url"></span>. </div>
+            <div class="modal-footer">
+               <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+         </div>
+      </div>
+   </div>
+	
+   <!--Invitations-->
+   
+   <div class="modal fade" id="invitation-response" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel3" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+         <div class="modal-content">
+            <div class="modal-header">
+               <h5 class="modal-title" id="exampleModalLabel3">Response to invitation</h5>
+               <button type="button" class="close" data-dismiss="modal" aria-label="Close"> <span aria-hidden="true">&times;</span> </button>
+            </div>
+            <div class="modal-body"></div>
+            <div class="modal-footer">
+               <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+         </div>
+      </div>
+   </div>
+	
+   <!--Scripts--> 
+   
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/json3/3.3.2/json3.js"></script> 
+   <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script> 
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script> 
+   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script> 
+   <script src="main/dist/main.js"></script> 
+</div>
+</body>
+</html>
