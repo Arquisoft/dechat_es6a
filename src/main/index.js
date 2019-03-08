@@ -266,7 +266,7 @@ $('.btn-cancel').click(() => {
 
 async function setUpChat() {
 	if (semanticChat) {
-		console.log(semanticChat.getMessages());
+		//console.log(semanticChat.getMessages());
 		semanticChat.getMessages().forEach(async(message) => {
 			$("#messagesarea").val($("#messagesarea").val() + "\n" + message.author + " [?]> " + message.messagetext);
 		});
@@ -281,11 +281,25 @@ async function setUpChat() {
 
 	$('#interlocutor-name').text(intName);
 
-	const message = $("#message").val();
-	interlocutorMessages.forEach(async(message) => {
-		$("#messagesarea").val($("#messagesarea").val() + "\n" + intName + " [?]> " + message.messageTx);
-		await core.storeMessage(userDataUrl, null, userWebId, null, message.messageTx, interlocWebId, dataSync, false);
-	});
+	//const message = $("#message").val();
+	var i = 0;
+	console.log(interlocutorMessages);
+	while (i<interlocutorMessages.length) {
+		$("#messagesarea").val($("#messagesarea").val() + "\n" + intName + " [?]> " + interlocutorMessages[i].messageTx);
+		await core.storeMessage(userDataUrl, interlocutorMessages[i].author, userWebId, null, interlocutorMessages[i].messageTx, interlocWebId, dataSync, false);
+		dataSync.deleteFileForUser(interlocutorMessages[i].inboxUrl);
+		interlocutorMessages[i] = "D";
+		i++;
+	}
+	i = interlocutorMessages.length;
+	while (i--) {
+		if(interlocutorMessages[i] == "D") {
+			interlocutorMessages.splice(i, 1);
+		}
+	}
+	
+	console.log(interlocutorMessages);
+	
 	openChat = true;
 
 }
@@ -329,10 +343,14 @@ async function checkForNotifications() {
 		console.log(message);
 		if (message) {
 			console.log("Guardando mensajes");
-			interlocutorMessages.push(message);
+			
 			newMessageFound = true;
-			if (openChat)
+			if (openChat) {
 				$("#messagesarea").val($("#messagesarea").val() + "\n" + message.author + " [?]> " + message.messageTx);
+			} else {
+				//If open there is no need to store them
+				interlocutorMessages.push(message);
+			}
 		}
 
 		if (!newMessageFound) {

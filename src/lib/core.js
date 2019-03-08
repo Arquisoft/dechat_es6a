@@ -642,7 +642,7 @@ class DeChatCore {
 
 	}
 
-	async getNewMessage(fileurl, userWebId,dataSync) {
+	async getNewMessage(fileurl, userWebId) {
 		const deferred = Q.defer();
 		const rdfjsSource = await rdfjsSourceFromUrl(fileurl, this.fetch);
 		if (rdfjsSource) {
@@ -668,8 +668,9 @@ class DeChatCore {
 						const messageUrl = result['?message'].value;
 						const messageTx = result['?msgtext'].value.split("/inbox/")[1];
 						const author = result['?username'].value;
-						//dataSync.deleteFileForUser(fileurl);
+						const inboxUrl = fileurl;
 						deferred.resolve({
+							inboxUrl,
 							messageTx,
 							messageUrl,
 							author
