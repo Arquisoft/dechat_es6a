@@ -319,8 +319,9 @@ async function setUpChat() {
 	//console.log("interloc WEBID is :" + interlocWebId); //Decker.solid.community/....
 
 	while (i < interlocutorMessages.length) {
-		//console.log("interloc author is: " + interlocutorMessages[i].author); //...../Deker
+		//console.log("interloc author is: " + interlocutorMessages[i].author); //...../Deker //Yarrick is better
 		var nameThroughUrl = interlocutorMessages[i].author.split("/").pop();
+		console.log(interlocutorMessages);
 		console.log("nombre de authorUrl is:" + nameThroughUrl);
 		console.log("original interlocutorName is:" + intName);
 		if (nameThroughUrl === intName) {
@@ -328,9 +329,9 @@ async function setUpChat() {
 			await core.storeMessage(userDataUrl, interlocutorMessages[i].author, userWebId, null, interlocutorMessages[i].messageTx, interlocWebId, dataSync, false);
 			dataSync.deleteFileForUser(interlocutorMessages[i].inboxUrl);
 			interlocutorMessages[i] = "D";
-			i++;
 			console.log("Matching names. All Correct");
 		}
+		i++;
 	}
 	i = interlocutorMessages.length;
 	while (i--) {
