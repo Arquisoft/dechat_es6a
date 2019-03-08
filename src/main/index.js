@@ -320,13 +320,13 @@ async function checkForNotifications() {
 
 	updates.forEach(async(fileurl) => {
 
-		console.log(fileurl);
+		//console.log(fileurl);
 
 		// check for new 
 		let newMessageFound = false;
 		console.log("Buscando nuevos mensajes");
 		let message = await core.getNewMessage(fileurl, userWebId, dataSync);
-		//console.log(message);
+		console.log(message);
 		if (message) {
 			console.log("Guardando mensajes");
 			interlocutorMessages.push(message);

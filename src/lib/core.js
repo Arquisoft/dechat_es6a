@@ -469,7 +469,7 @@ class DeChatCore {
 	async getInterlocutor(fileurl, userWebId) {
 		const deferred = Q.defer();
 		const rdfjsSource = await rdfjsSourceFromUrl(fileurl, this.fetch);
-		console.log(fileurl);
+		//console.log(fileurl);
 
 		if (rdfjsSource) {
 			const engine = newEngine();
@@ -661,7 +661,6 @@ class DeChatCore {
 					}]
 				})
 				.then(function (result) {
-					console.log(result);
 					result.bindingsStream.on('data', async function (result) {
 						//console.log(result);
 						messageFound = true;
@@ -669,6 +668,7 @@ class DeChatCore {
 						const messageUrl = result['?message'].value;
 						const messageTx = result['?msgtext'].value.split("/inbox/")[1];
 						const author = result['?username'].value;
+						//dataSync.deleteFileForUser(fileurl);
 						deferred.resolve({
 							messageTx,
 							messageUrl,
@@ -685,8 +685,6 @@ class DeChatCore {
 		} else {
 			deferred.resolve(null);
 		}
-		
-		dataSync.deleteFileForUser(fileurl);
 
 		return deferred.promise;
 	}
