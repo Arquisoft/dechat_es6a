@@ -19,6 +19,9 @@ class Loader {
 		this.fetch = fetch;
 	}
 
+	/**
+	 * This method loads the messages from the url passed through the parameter
+	 */
 	async loadFromUrl(chatUrl, userWebId, chatBaseUrl) {
 		const rdfjsSource = await this._getRDFjsSourceFromUrl(chatUrl);
 		const sources = [{
@@ -39,13 +42,16 @@ class Loader {
 		//console.log("friendWebId in loader.js is: " +interlocutorWebId);
 		//console.log(messages);
 		//console.log(messages.length);
-		
+
 		for (var i = 0, len = messages.length; i < len; i++) {
 			chat.loadMessage(messages[i]);
-		}	
+		}
 		return chat;
 	}
 
+	/**
+	 * This method is in charge of finding the message through the message url
+	 */
 	async _findMessage(messageUrl) {
 		const deferred = Q.defer();
 		let results = [];
@@ -83,7 +89,9 @@ class Loader {
 		return deferred.promise;
 	}
 
-	//NOT YET ID AT CHAT
+	/**
+	 * This method is in charge of finding the webId of the user's friend
+	 */
 	async findWebIdOfInterlocutor(chatUrl, userWebId) {
 		const deferred = Q.defer();
 
@@ -118,6 +126,9 @@ class Loader {
 		return deferred.promise;
 	}
 
+	/**
+	 * This method is in charge of returning the RDFjs source from the url
+	 */
 	_getRDFjsSourceFromUrl(url) {
 		const deferred = Q.defer();
 
@@ -153,7 +164,9 @@ class Loader {
 		return deferred.promise;
 	}
 
-
+	/**
+	 * This method is in charge of transforming the predicate to an object
+	 */
 	async _getObjectFromPredicateForResource(url, predicate) {
 		const deferred = Q.defer();
 		const rdfjsSource = await this._getRDFjsSourceFromUrl(url);

@@ -169,6 +169,9 @@ class DeChatCore {
 		return deferred.promise;
 	}
 
+	/**
+	 * This method creates a new chat
+	 */
 	async setUpNewChat(userDataUrl, userWebId, interlocutorWebId, dataSync) {
 		const chatUrl = await this.generateUniqueUrlForResource(userDataUrl);
 		const semanticChat = new SemanticChat({
@@ -191,7 +194,7 @@ class DeChatCore {
 
 		try {
 			await dataSync.executeSPARQLUpdateForUser(userDataUrl.replace("/private/", "/public/"), `INSERT DATA {${invitation.sparqlUpdate}}`);
-			
+
 			await dataSync.executeSPARQLUpdateForUser(userDataUrl, `INSERT DATA {${invitation2.sparqlUpdate}}`);
 		} catch (e) {
 			this.logger.error(`Could not save invitation for chat.`);
@@ -342,7 +345,7 @@ class DeChatCore {
 		return deferred.promise;
 	}
 
-	
+
 
 	/**
 	 * This method returns the urls of the invitation and the ofriends response.
@@ -465,7 +468,7 @@ class DeChatCore {
 
 		return deferred.promise;
 	}
-	
+
 	async getInterlocutor(fileurl, userWebId) {
 		const deferred = Q.defer();
 		const rdfjsSource = await rdfjsSourceFromUrl(fileurl, this.fetch);
@@ -492,11 +495,11 @@ class DeChatCore {
 					result.bindingsStream.on('data', async function (result) {
 
 						invitationFound = true;
-						result = result.toObject();		
+						result = result.toObject();
 
-							deferred.resolve(
-								result['?interlocutor'].value
-							);			
+						deferred.resolve(
+							result['?interlocutor'].value
+						);
 					});
 
 					result.bindingsStream.on('end', function () {
@@ -548,13 +551,13 @@ class DeChatCore {
 	}
 
 	async joinExistingChat(invitationUrl, interlocutorWebId, userWebId, userDataUrl, dataSync, fileUrl) {
-		
+
 		const response = await this.generateResponseToInvitation(userDataUrl, invitationUrl, userWebId, interlocutorWebId, "yes");
 
 		dataSync.sendToInterlocutorInbox(await this.getInboxUrl(interlocutorWebId), response.notification);
-		
+
 		const chatUrl = await this.generateUniqueUrlForResource(userDataUrl);
-		
+
 		try {
 			await dataSync.executeSPARQLUpdateForUser(userWebId, `INSERT DATA { <${chatUrl}> <${namespaces.schema}contributor> <${userWebId}>; 
 			<${namespaces.schema}recipient> <${interlocutorWebId}>;
@@ -563,7 +566,7 @@ class DeChatCore {
 			this.logger.error(`Could not add chat to WebId.`);
 			this.logger.error(e);
 		}
-		
+
 		dataSync.deleteFileForUser(fileUrl);
 	}
 
@@ -616,7 +619,7 @@ class DeChatCore {
 	async storeMessage(userDataUrl, username, userWebId, time, message, interlocutorWebId, dataSync, toSend) {
 
 		const messageUrl = await this.generateUniqueUrlForResource(userDataUrl);
-				const sparqlUpdate = `
+		const sparqlUpdate = `
 		<${messageUrl}> a <${namespaces.schema}Message>;
 		  <${namespaces.schema}givenName> <${username}>;
 		  <${namespaces.schema}text> <${message}>.

@@ -21,12 +21,18 @@ let interlocutorMessages = [];
 let semanticChat;
 let openChat = false;
 
+/**
+ *	This method is in charge of showing the popup to login or register
+ */
 $('.login-btn').click(() => {
 	auth.popupLogin({
 		popupUri: 'popup.html'
 	});
 });
 
+/**
+ *	This method is in charge of the user's logout
+ */
 $('#logout-btn').click(() => {
 	auth.logout();
 });
@@ -38,6 +44,9 @@ function afterChatOption() {
 	$('#chat-options').addClass('hidden');
 }
 
+/**
+ *	This method is in charge of the user's login
+ */
 auth.trackSession(async session => {
 	const loggedIn = !!session;
 	//alert(`logged in: ${loggedIn}`);
@@ -72,6 +81,9 @@ auth.trackSession(async session => {
 });
 
 
+/**
+ *	This button is in charge of showing the create chat option
+ */
 $('#new-btn').click(async() => {
 	if (userWebId) {
 		afterChatOption();
@@ -91,6 +103,9 @@ $('#new-btn').click(async() => {
 	}
 });
 
+/**
+ *	This method is in charge of starting a new chat with the friend selected from the option menu
+ */
 $('#start-new-chat-btn').click(async() => {
 	const dataUrl = $('#data-url').val();
 
@@ -105,6 +120,9 @@ $('#start-new-chat-btn').click(async() => {
 	}
 });
 
+/**
+ *	This method is in charge of setting up a new Conversation
+ */
 async function setUpNewConversation() {
 	//Initialize conversation
 	setUpForEveryChatOption();
@@ -114,6 +132,9 @@ async function setUpNewConversation() {
 	setUpChat();
 }
 
+/**
+ *	This method is in charge of showing the user's invitations from friends to join a chat
+ */
 $('#join-btn').click(async() => {
 	if (userWebId) {
 		afterChatOption();
@@ -144,6 +165,9 @@ $('#join-btn').click(async() => {
 	}
 });
 
+/**
+ *	This method is in charge of initiating the conversation between the user and the friend concerned
+ */
 $('#join-chat-btn').click(async() => {
 	if ($('#join-data-url').val() !== userWebId) {
 		userDataUrl = $('#join-data-url').val();
@@ -184,6 +208,9 @@ function setUpForEveryChatOption() {
 	$('#chat-loading').removeClass('hidden');
 }
 
+/**
+ *	This method is in charge of showing the open chat options
+ */
 $('#open-btn').click(async() => {
 	if (userWebId) {
 		afterChatOption();
@@ -251,6 +278,9 @@ async function openExistingChat(chatUrl) {
 	setUpChat();
 }
 
+/**
+ *	This method is in charge of getting back to the main menu and showing the start, join and open chat buttons
+ */
 $('.btn-cancel').click(() => {
 	interlocWebId = null;
 	openChat = false;
@@ -264,6 +294,9 @@ $('.btn-cancel').click(() => {
 	$("#messagesarea").val("");
 });
 
+/**
+ *	This method is in charge of setting up a chat and hiding the buttons start, join and chat.
+ */
 async function setUpChat() {
 	if (semanticChat) {
 		//console.log(semanticChat.getMessages());
@@ -284,11 +317,11 @@ async function setUpChat() {
 	//const message = $("#message").val();
 	var i = 0;
 	//console.log("interloc WEBID is :" + interlocWebId); //Decker.solid.community/....
-	
+
 	while (i < interlocutorMessages.length) {
 		//console.log("interloc author is: " + interlocutorMessages[i].author); //...../Deker
-		var nameThroughUrl = interlocutorMessages[i].author.split("/").pop();	
-		console.log("nombre de authorUrl is:"+ nameThroughUrl);
+		var nameThroughUrl = interlocutorMessages[i].author.split("/").pop();
+		console.log("nombre de authorUrl is:" + nameThroughUrl);
 		console.log("original interlocutorName is:" + intName);
 		if (nameThroughUrl === intName) {
 			$("#messagesarea").val($("#messagesarea").val() + "\n" + intName + " [?]> " + interlocutorMessages[i].messageTx);
@@ -310,6 +343,9 @@ async function setUpChat() {
 
 }
 
+/**
+ *	This method is in charge of sending the message and showing it in the text Area
+ */
 $('#write-chat').click(async() => {
 	var d = new Date();
 	var options = {
@@ -324,8 +360,9 @@ $('#write-chat').click(async() => {
 
 	$("#messagesarea").val($("#messagesarea").val() + "\n" + username + " [" + d.toLocaleDateString("en-US", options) + "]> " + message);
 	await core.storeMessage(userDataUrl, username, userWebId, d, message, interlocWebId, dataSync, true);
-	//document.getElementById("message").value = '';	
-	$("#message").attr('value', '');
+
+	//$("#message").attr('value', '');
+	document.getElementById("message").value = '';
 });
 
 
@@ -383,7 +420,7 @@ async function checkForNotifications() {
 }
 
 /**
- * This method processes a response to an invitation to join a game.
+ * This method processes a response to an invitation to join a chat.
  * @param response: the object representing the response.
  * @param fileurl: the url of the file containing the notification.
  * @returns {Promise<void>}
@@ -446,6 +483,9 @@ async function processResponseInNotification(response, fileurl) {
 	}
 }
 
+/**
+ *	This method is in charge of deleting the user's inbox. WARNING. a little risky
+ */
 $('#clear-inbox-btn').click(async() => {
 	const resources = await core.getAllResourcesInInbox(await core.getInboxUrl(userWebId));
 
