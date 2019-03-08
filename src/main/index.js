@@ -201,7 +201,7 @@ $('#open-btn').click(async() => {
 			$('#open-chats').removeClass('hidden');
 
 			chats.forEach(async chat => {
-				
+
 				const friendName = await core.getFormattedName(chat.interlocutor);
 
 				const $row = $(`
@@ -220,7 +220,7 @@ $('#open-btn').click(async() => {
 					}
 
 					userDataUrl = chats[i].storeUrl;
-					
+
 					interlocWebId = chat.interlocutor;
 
 					openExistingChat(selectedChat.split("#")[0]);
@@ -283,23 +283,29 @@ async function setUpChat() {
 
 	//const message = $("#message").val();
 	var i = 0;
-	console.log(interlocutorMessages);
-	while (i<interlocutorMessages.length) {
-		$("#messagesarea").val($("#messagesarea").val() + "\n" + intName + " [?]> " + interlocutorMessages[i].messageTx);
-		await core.storeMessage(userDataUrl, interlocutorMessages[i].author, userWebId, null, interlocutorMessages[i].messageTx, interlocWebId, dataSync, false);
-		dataSync.deleteFileForUser(interlocutorMessages[i].inboxUrl);
-		interlocutorMessages[i] = "D";
-		i++;
+	//console.log("interloc WEBID is :" + interlocWebId); //Decker.solid.community/....
+	
+	while (i < interlocutorMessages.length) {
+		//console.log("interloc author is: " + interlocutorMessages[i].author); //...../Deker
+		var nameThroughUrl = interlocutorMessages[i].author.split("/").pop();	
+		console.log("nombre de authorUrl is:"+ nameThroughUrl);
+		console.log("original interlocutorName is:" + intName);
+		if (nameThroughUrl === intName) {
+			$("#messagesarea").val($("#messagesarea").val() + "\n" + intName + " [?]> " + interlocutorMessages[i].messageTx);
+			await core.storeMessage(userDataUrl, interlocutorMessages[i].author, userWebId, null, interlocutorMessages[i].messageTx, interlocWebId, dataSync, false);
+			dataSync.deleteFileForUser(interlocutorMessages[i].inboxUrl);
+			interlocutorMessages[i] = "D";
+			i++;
+			console.log("Matching names. All Correct");
+		}
 	}
 	i = interlocutorMessages.length;
 	while (i--) {
-		if(interlocutorMessages[i] == "D") {
+		if (interlocutorMessages[i] == "D") {
 			interlocutorMessages.splice(i, 1);
 		}
 	}
-	
-	console.log(interlocutorMessages);
-	
+
 	openChat = true;
 
 }
@@ -318,6 +324,7 @@ $('#write-chat').click(async() => {
 
 	$("#messagesarea").val($("#messagesarea").val() + "\n" + username + " [" + d.toLocaleDateString("en-US", options) + "]> " + message);
 	await core.storeMessage(userDataUrl, username, userWebId, d, message, interlocWebId, dataSync, true);
+	//document.getElementById("message").value = '';	
 	$("#message").attr('value', '');
 });
 
@@ -343,7 +350,7 @@ async function checkForNotifications() {
 		console.log(message);
 		if (message) {
 			console.log("Guardando mensajes");
-			
+
 			newMessageFound = true;
 			if (openChat) {
 				$("#messagesarea").val($("#messagesarea").val() + "\n" + message.author + " [?]> " + message.messageTx);
