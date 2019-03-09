@@ -5,9 +5,10 @@ before_script:
 - cd src
 - npm install -g protractor
 - npm install -g http-server
+- apt-get install xvfb
 - http-server &
 - webdriver-manager update --standalone
 - webdriver-manager start &
-- npm install -g mocha
+- sleep 5
 script: npm test
 after_success: npm run coverage
