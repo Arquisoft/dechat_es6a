@@ -23,8 +23,8 @@
     "minami": "^1.2.3",
     "webpack": "^4.23.1",
     "webpack-cli": "^3.1.2",
-    "geckodriver": "^1.10.0",
-    "selenium": "^2.20.0"
+    "geckodriver": "^0.21.0",
+    "selenium": "^3.11.0"
   },
   "dependencies": {
     "@comunica/actor-init-sparql-rdfjs": "1.4.2",
