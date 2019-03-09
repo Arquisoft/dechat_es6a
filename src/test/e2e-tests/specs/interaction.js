@@ -56,4 +56,13 @@ describe( 'dechat interactions', function () {
         });
     });
 });
+       
+describe( 'dechat interactions', function () {
+    it ( 'Check open chat ', function () {
+            element( by.id( 'open-btn' ) ).click().then( function () {
+            expect( element( by.id( 'open-chats' ).isPresent()).toBe(true);
+            expect( element( by.id( 'open-btn' ).isPresent()).toBe(false);
+        });
+    });
+});
 
