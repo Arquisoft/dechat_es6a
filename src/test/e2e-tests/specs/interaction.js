@@ -47,4 +47,13 @@ describe( 'dechat interactions', function () {
         });
     });
 });
+ 
+describe( 'dechat interactions', function () {
+    it ( 'Check Start chat button text ', function () {
+            element( by.id( 'start-new-chat-btn' ) ).click().then( function () {
+            expect( element( by.id( 'chat' ).isPresent()).toBe(true);
+            expect( element( by.id( 'start-new-chat-btn' ).isPresent()).toBe(false);
+        });
+    });
+});
 
