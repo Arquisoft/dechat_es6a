@@ -11,5 +11,6 @@ before_script:
 - webdriver-manager start &
 - sleep 5
 - npm install -g @angular/cli
+- ng update @angular/cli --migrate-only --from=1.7.3
 script: ng build --prod
 after_success: npm run coverage
