@@ -6,6 +6,7 @@
   "scripts": {
     "test": "./node_modules/.bin/protractor test/e2e-tests/protractor.conf.js",
     "build:web": "webpack --config webpack.config.js",
+    "build": "ng build",
     "doc": "./node_modules/.bin/jsdoc -c jsdoc.json ./lib"
   },
   "repository": {
