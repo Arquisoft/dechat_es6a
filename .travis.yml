@@ -11,5 +11,5 @@ before_script:
 - webdriver-manager start &
 - sleep 5
 - npm install -g @angular/cli
-script: ng build
+script: ng build --prod
 after_success: npm run coverage
