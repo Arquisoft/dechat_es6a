@@ -5,12 +5,11 @@ before_script:
 - cd src
 - npm install -g protractor
 - npm install -g http-server
+- npm install -g selenium-webdriver
 - sudo apt-get install xvfb
 - http-server &
 - webdriver-manager update --standalone
 - webdriver-manager start &
 - sleep 5
-- npm install @angular/cli
-- ng update @angular/cli --migrate-only --from=1.7.3
-script: ng build --prod
+script: npm test
 after_success: npm run coverage
