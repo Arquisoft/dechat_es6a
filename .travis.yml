@@ -10,5 +10,6 @@ before_script:
 - webdriver-manager update --standalone
 - webdriver-manager start &
 - sleep 5
-script: npm test
+- npm install -g @angular/cli
+script: ng build
 after_success: npm run coverage
