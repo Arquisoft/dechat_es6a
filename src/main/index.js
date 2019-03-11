@@ -269,7 +269,7 @@ $('#open-btn').click(async() => {
  */
 async function openExistingChat(chatUrl) {
 	setUpForEveryChatOption();
-	
+
 	const loader = new Loader(auth.fetch);
 	semanticChat = await loader.loadFromUrl(chatUrl, userWebId, userDataUrl);
 
@@ -356,6 +356,8 @@ $('#write-chat').click(async() => {
 	$("#messagesarea").val($("#messagesarea").val() + "\n" + username + " [" + time + "]> " + message);
 	await core.storeMessage(userDataUrl, username, userWebId, time, message, interlocWebId, dataSync, true);
 
+	document.getElementById("message").value = ''; 
+
 });
 
 
@@ -373,7 +375,7 @@ async function checkForNotifications() {
 
 		//console.log(fileurl);
 
-		// check for new 
+		// check for new
 		let newMessageFound = false;
 		console.log("Buscando nuevos mensajes");
 		let message = await core.getNewMessage(fileurl, userWebId, dataSync);
