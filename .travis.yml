@@ -6,6 +6,7 @@ before_script:
 - npm install -g protractor
 - npm install -g http-server
 - npm install -g selenium-webdriver
+- npm install -g geckodriver
 - sudo apt-get install xvfb
 - http-server &
 - webdriver-manager update --standalone
