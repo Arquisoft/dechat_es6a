@@ -617,12 +617,15 @@ class DeChatCore {
 	}
 
 	async storeMessage(userDataUrl, username, userWebId, time, message, interlocutorWebId, dataSync, toSend) {
+		
+		const messageTx = message.replace(" ","U+0020");
+		const psUsername = username.replace(" ","U+0020");
 
 		const messageUrl = await this.generateUniqueUrlForResource(userDataUrl);
 		const sparqlUpdate = `
 		<${messageUrl}> a <${namespaces.schema}Message>;
-		  <${namespaces.schema}givenName> <${username}>;
-		  <${namespaces.schema}text> <${message}>.
+		  <${namespaces.schema}givenName> <${psUsername}>;
+		  <${namespaces.schema}text> <${messageTx}>.
 	  `;
 		//<${namespaces.schema}dateCreated> <${time}>;
 		try {
@@ -669,8 +672,8 @@ class DeChatCore {
 						messageFound = true;
 						result = result.toObject();
 						const messageUrl = result['?message'].value;
-						const messageTx = result['?msgtext'].value.split("/inbox/")[1];
-						const author = result['?username'].value;
+						const messageTx = result['?msgtext'].value.split("/inbox/")[1].replace("U+0020", " ");
+						const author = result['?username'].value.replace("U+0020", " ");
 						const inboxUrl = fileurl;
 						deferred.resolve({
 							inboxUrl,
