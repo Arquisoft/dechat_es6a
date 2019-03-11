@@ -132,8 +132,9 @@ class DeChatCore {
 			const chatUrls = [];
 			const promises = [];
 
-			engine.query(`SELECT ?chat ?url {
+			engine.query(`SELECT ?chat ?int ?url {
 			 ?chat <${namespaces.schema}contributor> <${webid}>;
+				<${namespaces.schema}recipient> ?int;
 				<${namespaces.storage}storeIn> ?url.
 		  }`, {
 					sources: [{
@@ -142,31 +143,35 @@ class DeChatCore {
 					}]
 				})
 				.then(result => {
-          result.bindingsStream.on('data', async (data) => {
-            const deferred = Q.defer();
-            promises.push(deferred.promise);
-            data = data.toObject();
-              chatUrls.push({
-                chatUrl: data['?chat'].value,
-                storeUrl: data['?url'].value,
-              });
-            deferred.resolve();
-          });
+					result.bindingsStream.on('data', async(data) => {
+						const deferred = Q.defer();
+						promises.push(deferred.promise);
+						data = data.toObject();
+						chatUrls.push({
+							chatUrl: data['?chat'].value,
+							storeUrl: data['?url'].value,
+							interlocutor: data['?int'].value
+						});
+						deferred.resolve();
+					});
 
-          result.bindingsStream.on('end', function () {
-            Q.all(promises).then(() => {
-				console.log(chatUrls);
-              deferred.resolve(chatUrls);
-            });
-          });
-        });
-    } else {
-      deferred.resolve(null);
-    }
+					result.bindingsStream.on('end', function () {
+						Q.all(promises).then(() => {
+							//console.log(chatUrls);
+							deferred.resolve(chatUrls);
+						});
+					});
+				});
+		} else {
+			deferred.resolve(null);
+		}
 
-    return deferred.promise;
+		return deferred.promise;
 	}
 
+	/**
+	 * This method creates a new chat
+	 */
 	async setUpNewChat(userDataUrl, userWebId, interlocutorWebId, dataSync) {
 		const chatUrl = await this.generateUniqueUrlForResource(userDataUrl);
 		const semanticChat = new SemanticChat({
@@ -176,9 +181,12 @@ class DeChatCore {
 			interlocutorWebId
 		});
 		const invitation = await this.generateInvitation(userDataUrl.replace("/private/", "/public/"), semanticChat.getUrl(), userWebId, interlocutorWebId);
+		const invitation2 = await this.generateInvitation(userDataUrl, semanticChat.getUrl(), userWebId, interlocutorWebId);
 
 		try {
-			await dataSync.executeSPARQLUpdateForUser(userWebId, `INSERT DATA { <${chatUrl}> <${namespaces.schema}contributor> <${userWebId}>; <${namespaces.storage}storeIn> <${userDataUrl}>.}`);
+			await dataSync.executeSPARQLUpdateForUser(userWebId, `INSERT DATA { <${chatUrl}> <${namespaces.schema}contributor> <${userWebId}>; 
+			<${namespaces.schema}recipient> <${interlocutorWebId}>;
+			<${namespaces.storage}storeIn> <${userDataUrl}>.}`);
 		} catch (e) {
 			this.logger.error(`Could not add chat to WebId.`);
 			this.logger.error(e);
@@ -186,6 +194,8 @@ class DeChatCore {
 
 		try {
 			await dataSync.executeSPARQLUpdateForUser(userDataUrl.replace("/private/", "/public/"), `INSERT DATA {${invitation.sparqlUpdate}}`);
+
+			await dataSync.executeSPARQLUpdateForUser(userDataUrl, `INSERT DATA {${invitation2.sparqlUpdate}}`);
 		} catch (e) {
 			this.logger.error(`Could not save invitation for chat.`);
 			this.logger.error(e);
@@ -224,7 +234,7 @@ class DeChatCore {
 
 	async generateInvitation(baseUrl, chatUrl, userWebId, interlocutorWebId) {
 		const invitationUrl = await this.generateUniqueUrlForResource(baseUrl);
-		console.log(invitationUrl);
+		//console.log(invitationUrl);
 		const notification = `<${invitationUrl}> a <${namespaces.schema}InviteAction>.`;
 		const sparqlUpdate = `
     <${invitationUrl}> a <${namespaces.schema}InviteAction>;
@@ -274,7 +284,7 @@ class DeChatCore {
 			.then(function (result) {
 				result.bindingsStream.on('data', data => {
 					data = data.toObject();
-					
+
 					const resource = data['?resource'].value;
 					//console.log(resource);
 					if (self.alreadyCheckedResources.indexOf(resource) === -1) {
@@ -289,74 +299,6 @@ class DeChatCore {
 			});
 
 		return deferred.promise;
-	}
-
-	/**
-	 * This method checks for new conversations in a notification.
-	 * @param semanticChat: the current semantic chat being used
-	 * @param userWebId: the WebId of the current user
-	 * @param fileurl: the url of file that contains the notification.
-	 * @param userDataUrl: the url where the new data is stored for the chat
-	 * @param dataSync: the DataSync instance used to save that to the POD
-	 * @param callback: the function with as parameters the san and url of the next move that is called at the end of this method
-	 * @returns {Promise<void>}
-	 */
-	async checkForNewMessage(semanticChat = null, userWebId, fileurl, userDataUrl, dataSync, callback) {
-
-		//TODO adapt this
-		const originalData = await this.getMessages(fileurl);
-		let chat = null;
-		
-
-		if (originalData) {
-			let chatUrl = await this.getObjectFromPredicateForResource(originalData, namespaces.schema + 'subEvent');
-
-			if (!chatUrl) {
-
-				chatUrl = await this.getChatOfMessage(originalData);
-
-				if (chatUrl) {
-					console.error('DeChat: found by using Comunica directly, but not when using LDflex. Caching issue (reported).');
-				}
-			}
-
-			if (chatUrl) {
-				chatUrl = chatUrl.value;
-
-				chat = semanticChat;
-
-
-				let chatStorageUrl;
-
-				if (!chat || chat.getUrl() !== chatUrl) {
-					chatStorageUrl = await this.getStorageForChat(userWebId, chatUrl);
-
-					if (chatStorageUrl) {
-						const loader = new Loader(this.fetch);
-
-						chat = await loader.loadFromUrl(chatUrl, userWebId, chatStorageUrl);	//Aquí se hallan los mensajes cargados
-
-					} else {
-						this.logger.debug(`No storage location is found for chat "${chatUrl}". Ignoring notification in ${fileurl}.`);
-					}
-				} else {
-					chatStorageUrl = userDataUrl;
-				}
-				
-				//Mostrar mensajes cargados en ventana chat.
-				//Quizá devolver a index.js y que se realice alli sea más adecuado.
-
-				
-
-				//Subir mensajes al POD de este otro usuario. Todo lo demás no nos es relevante	
-				//dataSync.executeSPARQLUpdateForUser(chatStorageUrl, update);
-				
-				
-				
-			
-		}
-	}
-	return chat.getMessages();
 	}
 
 	/**
@@ -403,46 +345,7 @@ class DeChatCore {
 		return deferred.promise;
 	}
 
-	async getMessages(fileurl) {
-		const deferred = Q.defer();
-		const rdfjsSource = await rdfjsSourceFromUrl(fileurl, this.fetch);
 
-		if (rdfjsSource) {
-			const engine = newEngine();
-
-			//<${namespaces.schema}dateCreated> ?time;
-			engine.query(`SELECT * {
-				 ?message a <${namespaces.schema}Message>;
-				<${namespaces.schema}givenName> ?username;				
-				<${namespaces.schema}text> ?msgtext.
-  }`, {
-					sources: [{
-						type: 'rdfjsSource',
-						value: rdfjsSource
-					}]
-				})
-				.then(function (result) {
-					console.log("SI");
-					result.bindingsStream.on('data', async function (data) {
-						data = data.toObject();
-						
-						const messageUrl = data['?message'].value;
-						const messageTxt = data['?msgtext'].value;
-						let msgText = await self.getObjectFromPredicateForResource(messageUrl, namespaces.schema + 'text');
-						deferred.resolve(msgText);
-					});
-
-					result.bindingsStream.on('end', function () {
-						deferred.resolve(null);
-					});
-				});
-		} else {
-			console.log("NO");
-			deferred.resolve(null);
-		}
-
-		return deferred.promise;
-	}
 
 	/**
 	 * This method returns the urls of the invitation and the ofriends response.
@@ -454,7 +357,7 @@ class DeChatCore {
 	async getResponseToInvitation(fileurl) {
 		const deferred = Q.defer();
 		const rdfjsSource = await rdfjsSourceFromUrl(fileurl, this.fetch);
-		
+
 		if (rdfjsSource) {
 			const engine = newEngine();
 
@@ -516,7 +419,7 @@ class DeChatCore {
 				})
 				.then(function (result) {
 					result.bindingsStream.on('data', async function (result) {
-						
+
 						invitationFound = true;
 						result = result.toObject();
 						//console.log(result);
@@ -566,6 +469,53 @@ class DeChatCore {
 		return deferred.promise;
 	}
 
+	async getInterlocutor(fileurl, userWebId) {
+		const deferred = Q.defer();
+		const rdfjsSource = await rdfjsSourceFromUrl(fileurl, this.fetch);
+		//console.log(fileurl);
+
+		if (rdfjsSource) {
+			const engine = newEngine();
+			let invitationFound = false;
+			const self = this;
+
+			engine.query(`SELECT * {
+		?invitation a <${namespaces.schema}InviteAction>;
+	<${namespaces.schema}agent> ?sender;
+	<${namespaces.schema}event> ?chaturl; 
+	<${namespaces.schema}recipient> ?interlocutor. 
+  }`, {
+					sources: [{
+						type: 'rdfjsSource',
+						value: rdfjsSource
+					}]
+				})
+				.then(function (result) {
+					console.log(result);
+					result.bindingsStream.on('data', async function (result) {
+
+						invitationFound = true;
+						result = result.toObject();
+
+						deferred.resolve(
+							result['?interlocutor'].value
+						);
+					});
+
+					result.bindingsStream.on('end', function () {
+						if (!invitationFound) {
+							console.log("NO");
+							deferred.resolve(null);
+						}
+					});
+				});
+		} else {
+			deferred.resolve(null);
+		}
+
+		return deferred.promise;
+	}
+
 	async getAllObjectsFromPredicateForResource(url, predicate) {
 		const deferred = Q.defer();
 		const rdfjsSource = await rdfjsSourceFromUrl(url, this.fetch);
@@ -599,28 +549,41 @@ class DeChatCore {
 
 		return deferred.promise;
 	}
-	
+
 	async joinExistingChat(invitationUrl, interlocutorWebId, userWebId, userDataUrl, dataSync, fileUrl) {
+
 		const response = await this.generateResponseToInvitation(userDataUrl, invitationUrl, userWebId, interlocutorWebId, "yes");
-		
+
 		dataSync.sendToInterlocutorInbox(await this.getInboxUrl(interlocutorWebId), response.notification);
-		//dataSync.deleteFileForUser(fileUrl);
-  }
-  
-   async generateResponseToInvitation(baseUrl, invitationUrl, userWebId, interlocutorWebId, response) {
-    const rsvpUrl = await this.generateUniqueUrlForResource(baseUrl);
-    let responseUrl;
 
-    if (response === 'yes') {
-      responseUrl = namespaces.schema + 'RsvpResponseYes';
-    } else if (response === "no") {
-      responseUrl = namespaces.schema + 'RsvpResponseNo';
-    } else {
-      throw new Error(`The parameter "response" expects either "yes" or "no". Instead, "${response}" was provided.`);
-    }
+		const chatUrl = await this.generateUniqueUrlForResource(userDataUrl);
 
-    const notification = `<${invitationUrl}> <${namespaces.schema}result> <${rsvpUrl}>.`;
-    const sparqlUpdate = `
+		try {
+			await dataSync.executeSPARQLUpdateForUser(userWebId, `INSERT DATA { <${chatUrl}> <${namespaces.schema}contributor> <${userWebId}>; 
+			<${namespaces.schema}recipient> <${interlocutorWebId}>;
+			<${namespaces.storage}storeIn> <${userDataUrl}>.}`);
+		} catch (e) {
+			this.logger.error(`Could not add chat to WebId.`);
+			this.logger.error(e);
+		}
+
+		dataSync.deleteFileForUser(fileUrl);
+	}
+
+	async generateResponseToInvitation(baseUrl, invitationUrl, userWebId, interlocutorWebId, response) {
+		const rsvpUrl = await this.generateUniqueUrlForResource(baseUrl);
+		let responseUrl;
+
+		if (response === 'yes') {
+			responseUrl = namespaces.schema + 'RsvpResponseYes';
+		} else if (response === "no") {
+			responseUrl = namespaces.schema + 'RsvpResponseNo';
+		} else {
+			throw new Error(`The parameter "response" expects either "yes" or "no". Instead, "${response}" was provided.`);
+		}
+
+		const notification = `<${invitationUrl}> <${namespaces.schema}result> <${rsvpUrl}>.`;
+		const sparqlUpdate = `
     <${rsvpUrl}> a <${namespaces.schema}RsvpAction>;
       <${namespaces.schema}rsvpResponse> <${responseUrl}>;
       <${namespaces.schema}agent> <${userWebId}>;
@@ -629,40 +592,39 @@ class DeChatCore {
     <${invitationUrl}> <${namespaces.schema}result> <${rsvpUrl}>.
   `;
 
-    return {
-      notification,
-      sparqlUpdate
-    };
-  }
-  
-  async processChatToJoin(chat, fileurl) {
-    chat.fileUrl = fileurl;
-	chat.name = "Chat de ";
-	//console.log(chat.friendWebId);
-    chat.interlocutorName = await this.getFormattedName(chat.friendWebId.id);
-	//console.log(chat);
-    return chat;
-  }
-  
-  /**
-   * This method returns the chat of an invitation.
-   * @param url: the url of the invitation.
-   * @returns {Promise}: a promise that returns the url of the chat (NamedNode) or null if none is found.
-   */
-  async getChatFromInvitation(url) {
-    return this.getObjectFromPredicateForResource(url, namespaces.schema + 'event');
-  }
-	
+		return {
+			notification,
+			sparqlUpdate
+		};
+	}
+
+	async processChatToJoin(chat, fileurl) {
+		chat.fileUrl = fileurl;
+		chat.name = "Chat de ";
+		//console.log(chat.friendWebId);
+		chat.interlocutorName = await this.getFormattedName(chat.friendWebId.id);
+		//console.log(chat);
+		return chat;
+	}
+
+	/**
+	 * This method returns the chat of an invitation.
+	 * @param url: the url of the invitation.
+	 * @returns {Promise}: a promise that returns the url of the chat (NamedNode) or null if none is found.
+	 */
+	async getChatFromInvitation(url) {
+		return this.getObjectFromPredicateForResource(url, namespaces.schema + 'event');
+	}
+
 	async storeMessage(userDataUrl, username, userWebId, time, message, interlocutorWebId, dataSync, toSend) {
-		
+
 		const messageUrl = await this.generateUniqueUrlForResource(userDataUrl);
 		const sparqlUpdate = `
 		<${messageUrl}> a <${namespaces.schema}Message>;
-		   <${namespaces.schema}givenName> <${username}>;
+		  <${namespaces.schema}givenName> <${username}>;
 		  <${namespaces.schema}text> <${message}>.
 	  `;
-	    //<${namespaces.schema}dateCreated> <${time}>;
-
+		//<${namespaces.schema}dateCreated> <${time}>;
 		try {
 			await dataSync.executeSPARQLUpdateForUser(userDataUrl, `INSERT DATA {${sparqlUpdate}}`);
 		} catch (e) {
@@ -670,19 +632,19 @@ class DeChatCore {
 			this.logger.error(`Could not save new message.`);
 			this.logger.error(e);
 		}
-		
-		if(toSend) {
-		try {
-			await dataSync.sendToInterlocutorInbox(await this.getInboxUrl(interlocutorWebId), sparqlUpdate);
-		} catch (e) {
-			this.logger.error(`Could not send message to interlocutor.`);
-			console.log("Could not send");
-			this.logger.error(e);
-		}
+
+		if (toSend) {
+			try {
+				await dataSync.sendToInterlocutorInbox(await this.getInboxUrl(interlocutorWebId), sparqlUpdate);
+			} catch (e) {
+				this.logger.error(`Could not send message to interlocutor.`);
+				console.log("Could not send");
+				this.logger.error(e);
+			}
 		}
 
 	}
-	
+
 	async getNewMessage(fileurl, userWebId) {
 		const deferred = Q.defer();
 		const rdfjsSource = await rdfjsSourceFromUrl(fileurl, this.fetch);
@@ -692,9 +654,9 @@ class DeChatCore {
 			const self = this;
 			//<${namespaces.schema}dateCreated> ?time;
 			engine.query(`SELECT * {
-				 ?message a <${namespaces.schema}Message>;
-				<${namespaces.schema}givenName> ?username;				
-				<${namespaces.schema}text> ?msgtext.
+				?message a <${namespaces.schema}Message>;
+					<${namespaces.schema}givenName> ?username;
+					<${namespaces.schema}text> ?msgtext.
 			}`, {
 					sources: [{
 						type: 'rdfjsSource',
@@ -703,12 +665,19 @@ class DeChatCore {
 				})
 				.then(function (result) {
 					result.bindingsStream.on('data', async function (result) {
-						console.log(result);
+						//console.log(result);
 						messageFound = true;
 						result = result.toObject();
 						const messageUrl = result['?message'].value;
 						const messageTx = result['?msgtext'].value.split("/inbox/")[1];
-						deferred.resolve({messageTx});
+						const author = result['?username'].value;
+						const inboxUrl = fileurl;
+						deferred.resolve({
+							inboxUrl,
+							messageTx,
+							messageUrl,
+							author
+						});
 					});
 
 					result.bindingsStream.on('end', function () {
@@ -723,56 +692,64 @@ class DeChatCore {
 
 		return deferred.promise;
 	}
-	
-	  async fileContainsChatInfo(fileUrl) {
-    const deferred = Q.defer();
-    const rdfjsSource = await rdfjsSourceFromUrl(fileUrl, this.fetch);
-    const engine = newEngine();
 
-    engine.query(`SELECT * {
+	async fileContainsChatInfo(fileUrl) {
+		const deferred = Q.defer();
+		const rdfjsSource = await rdfjsSourceFromUrl(fileUrl, this.fetch);
+		const engine = newEngine();
+
+		engine.query(`SELECT * {
     OPTIONAL { ?s a <${namespaces.schema}InviteAction>.}
     OPTIONAL { ?s a <${namespaces.schema}Message> ?o; <${namespaces.schema}text> ?t.}
-  }`,
-      {sources: [{type: 'rdfjsSource', value: rdfjsSource}]})
-      .then(function (result) {
-        result.bindingsStream.on('data', data => {
-			console.log(result);
-          deferred.resolve(true);
-        });
+  }`, {
+				sources: [{
+					type: 'rdfjsSource',
+					value: rdfjsSource
+				}]
+			})
+			.then(function (result) {
+				result.bindingsStream.on('data', data => {
+					console.log(result);
+					deferred.resolve(true);
+				});
 
-        result.bindingsStream.on('end', function () {
-          deferred.resolve(false);
-        });
-      });
+				result.bindingsStream.on('end', function () {
+					deferred.resolve(false);
+				});
+			});
 
-    return deferred.promise;
-  }
-  
-   async getAllResourcesInInbox(inboxUrl) {
-    const deferred = Q.defer();
-    const resources = [];
-    const rdfjsSource = await rdfjsSourceFromUrl(inboxUrl, this.fetch);
-    const engine = newEngine();
+		return deferred.promise;
+	}
 
-    engine.query(`SELECT ?resource {
+	async getAllResourcesInInbox(inboxUrl) {
+		const deferred = Q.defer();
+		const resources = [];
+		const rdfjsSource = await rdfjsSourceFromUrl(inboxUrl, this.fetch);
+		const engine = newEngine();
+
+		engine.query(`SELECT ?resource {
       ?resource a <http://www.w3.org/ns/ldp#Resource>.
-    }`,
-      { sources: [ { type: 'rdfjsSource', value: rdfjsSource } ] })
-      .then(function (result) {
-        result.bindingsStream.on('data', data => {
-          data = data.toObject();
+    }`, {
+				sources: [{
+					type: 'rdfjsSource',
+					value: rdfjsSource
+				}]
+			})
+			.then(function (result) {
+				result.bindingsStream.on('data', data => {
+					data = data.toObject();
 
-          const resource = data['?resource'].value;
-          resources.push(resource);
-        });
+					const resource = data['?resource'].value;
+					resources.push(resource);
+				});
 
-        result.bindingsStream.on('end', function () {
-          deferred.resolve(resources);
-        });
-      });
+				result.bindingsStream.on('end', function () {
+					deferred.resolve(resources);
+				});
+			});
 
-    return deferred.promise;
-  }
+		return deferred.promise;
+	}
 
 }
 module.exports = DeChatCore;

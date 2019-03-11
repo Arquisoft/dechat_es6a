@@ -21,12 +21,18 @@ let interlocutorMessages = [];
 let semanticChat;
 let openChat = false;
 
+/**
+ *	This method is in charge of showing the popup to login or register
+ */
 $('.login-btn').click(() => {
 	auth.popupLogin({
 		popupUri: 'popup.html'
 	});
 });
 
+/**
+ *	This method is in charge of the user's logout
+ */
 $('#logout-btn').click(() => {
 	auth.logout();
 });
@@ -38,6 +44,9 @@ function afterChatOption() {
 	$('#chat-options').addClass('hidden');
 }
 
+/**
+ *	This method is in charge of the user's login
+ */
 auth.trackSession(async session => {
 	const loggedIn = !!session;
 	//alert(`logged in: ${loggedIn}`);
@@ -72,6 +81,9 @@ auth.trackSession(async session => {
 });
 
 
+/**
+ *	This button is in charge of showing the create chat option
+ */
 $('#new-btn').click(async() => {
 	if (userWebId) {
 		afterChatOption();
@@ -91,6 +103,9 @@ $('#new-btn').click(async() => {
 	}
 });
 
+/**
+ *	This method is in charge of starting a new chat with the friend selected from the option menu
+ */
 $('#start-new-chat-btn').click(async() => {
 	const dataUrl = $('#data-url').val();
 
@@ -105,6 +120,9 @@ $('#start-new-chat-btn').click(async() => {
 	}
 });
 
+/**
+ *	This method is in charge of setting up a new Conversation
+ */
 async function setUpNewConversation() {
 	//Initialize conversation
 	setUpForEveryChatOption();
@@ -114,6 +132,9 @@ async function setUpNewConversation() {
 	setUpChat();
 }
 
+/**
+ *	This method is in charge of showing the user's invitations from friends to join a chat
+ */
 $('#join-btn').click(async() => {
 	if (userWebId) {
 		afterChatOption();
@@ -144,6 +165,9 @@ $('#join-btn').click(async() => {
 	}
 });
 
+/**
+ *	This method is in charge of initiating the conversation between the user and the friend concerned
+ */
 $('#join-chat-btn').click(async() => {
 	if ($('#join-data-url').val() !== userWebId) {
 		userDataUrl = $('#join-data-url').val();
@@ -163,10 +187,9 @@ $('#join-chat-btn').click(async() => {
 			// remove it from the array so it's no longer shown in the UI
 			chatsToJoin.splice(i, 1);
 
-			 
-			 interlocWebId = chat.friendWebId.id;
-			 semanticChat = await core.joinExistingChat(chat.invitationUrl, interlocWebId, userWebId, userDataUrl, dataSync, chat.fileUrl);
-			 console.log(semanticChat);
+
+			interlocWebId = chat.friendWebId.id;
+			await core.joinExistingChat(chat.invitationUrl, interlocWebId, userWebId, userDataUrl, dataSync, chat.fileUrl);
 			setUpChat();
 		} else {
 			$('#write-permission-url').text(userDataUrl);
@@ -185,11 +208,14 @@ function setUpForEveryChatOption() {
 	$('#chat-loading').removeClass('hidden');
 }
 
+/**
+ *	This method is in charge of showing the open chat options
+ */
 $('#open-btn').click(async() => {
 	if (userWebId) {
 		afterChatOption();
-		
-		 const $tbody = $('#open-chat-table tbody');
+
+		const $tbody = $('#open-chat-table tbody');
 		$tbody.empty();
 
 		$('#open-chat-options').removeClass('hidden');
@@ -202,40 +228,39 @@ $('#open-btn').click(async() => {
 			$('#open-chats').removeClass('hidden');
 
 			chats.forEach(async chat => {
-				//let agent = await core.getObjectFromPredicateForResource(chat.chatUrl, namespaces.schema + 'agent');
-				
-				const loader = new Loader(auth.fetch);
-				//const friendWebId = await loader.findWebIdOfOpponent(chat.chatUrl, userWebId);
-				//const friendName = await core.getFormattedName(friendWebId);
+
+				const friendName = await core.getFormattedName(chat.interlocutor);
 
 				const $row = $(`
-          <tr data-chat-url="${chat.chatUrl}" class='clickable-row'>
-            <td>Chat de</td>
-            <td>Desconocido</td>
-          </tr>`);
+						  <tr data-chat-url="${chat.chatUrl}" class='clickable-row'>
+							<td>Chat de ${friendName}</td>
+						  </tr>`);
 
-        $row.click(function() {
-          $('#continue-chat-options').addClass('hidden');
-          const selectedChat = $(this).data('chat-url');
+				$row.click(function () {
+					$('#open-chat-options').addClass('hidden');
+					const selectedChat = $(this).data('chat-url');
 
-          let i = 0;
+					let i = 0;
 
-          while (i < chats.length && chats[i].chatUrl !== selectedChat) {
-            i ++;
-          }
+					while (i < chats.length && chats[i].chatUrl !== selectedChat) {
+						i++;
+					}
 
-          userDataUrl = chats[i].storeUrl;
+					userDataUrl = chats[i].storeUrl;
 
-          openExistingChat(selectedGame);
+					interlocWebId = chat.interlocutor;
+
+					openExistingChat(selectedChat.split("#")[0]);
+				});
+				$tbody.append($row);
 			});
-			$tbody.append($row);
-		});  } else {
+		} else {
 			$('#no-open').removeClass('hidden');
 		}
 	} else {
 		$('#login-required').modal('show');
 	}
- });
+});
 
 /**
  * This method lets a player open an existing chess chat.
@@ -247,11 +272,15 @@ async function openExistingChat(chatUrl) {
 
 	const loader = new Loader(auth.fetch);
 	semanticChat = await loader.loadFromUrl(chatUrl, userWebId, userDataUrl);
-	interlocWebId = semanticChat.getInterlocutorWebId();
+
+	//console.log(chatUrl);
 
 	setUpChat();
 }
 
+/**
+ *	This method is in charge of getting back to the main menu and showing the start, join and open chat buttons
+ */
 $('.btn-cancel').click(() => {
 	interlocWebId = null;
 	openChat = false;
@@ -261,27 +290,63 @@ $('.btn-cancel').click(() => {
 	$('#join-chat-options').addClass('hidden');
 	$('#open-chat-options').addClass('hidden');
 	$('#chat-options').removeClass('hidden');
+
+	$("#messagesarea").val("");
 });
 
+/**
+ *	This method is in charge of setting up a chat and hiding the buttons start, join and chat.
+ */
 async function setUpChat() {
-	//const chat = semanticChat.getChat();
+	if (semanticChat) {
+		//console.log(semanticChat.getMessages());
+		semanticChat.getMessages().forEach(async(message) => {
+			$("#messagesarea").val($("#messagesarea").val() + "\n" + message.author + " [?]> " + message.messagetext);
+		});
+	}
 
 	$('#chat').removeClass('hidden');
 	$('#chat-loading').addClass('hidden');
+	$('#open-chats').addClass('hidden');
+	$('#open-chats-options').addClass('hidden');
 
 	const intName = await core.getFormattedName(interlocWebId);
 
 	$('#interlocutor-name').text(intName);
-	
-	const message = $("#message").val();
-	interlocutorMessages.forEach(async(message) => {
-		$("#messagesarea").val($("#messagesarea").val() + "\n" + intName + " [?]> " + message.messageTx);
-		await core.storeMessage(userDataUrl, null, userWebId, null, message.messageTx, interlocWebId, dataSync, false);
-	});
+
+	//const message = $("#message").val();
+	var i = 0;
+	//console.log("interloc WEBID is :" + interlocWebId); //Decker.solid.community/....
+
+	while (i < interlocutorMessages.length) {
+		//console.log("interloc author is: " + interlocutorMessages[i].author); //...../Deker //Yarrick is better
+		var nameThroughUrl = interlocutorMessages[i].author.split("/").pop();
+		console.log(interlocutorMessages);
+		console.log("nombre de authorUrl is:" + nameThroughUrl);
+		console.log("original interlocutorName is:" + intName);
+		if (nameThroughUrl === intName) {
+			$("#messagesarea").val($("#messagesarea").val() + "\n" + intName + " [?]> " + interlocutorMessages[i].messageTx);
+			await core.storeMessage(userDataUrl, interlocutorMessages[i].author, userWebId, null, interlocutorMessages[i].messageTx, interlocWebId, dataSync, false);
+			dataSync.deleteFileForUser(interlocutorMessages[i].inboxUrl);
+			interlocutorMessages[i] = "D";
+			console.log("Matching names. All Correct");
+		}
+		i++;
+	}
+	i = interlocutorMessages.length;
+	while (i--) {
+		if (interlocutorMessages[i] == "D") {
+			interlocutorMessages.splice(i, 1);
+		}
+	}
+
 	openChat = true;
 
 }
 
+/**
+ *	This method is in charge of sending the message and showing it in the text Area
+ */
 $('#write-chat').click(async() => {
 	var d = new Date();
 	var options = {
@@ -296,7 +361,9 @@ $('#write-chat').click(async() => {
 
 	$("#messagesarea").val($("#messagesarea").val() + "\n" + username + " [" + d.toLocaleDateString("en-US", options) + "]> " + message);
 	await core.storeMessage(userDataUrl, username, userWebId, d, message, interlocWebId, dataSync, true);
-	$("#message").attr('value', '');
+
+	//$("#message").attr('value', '');
+	document.getElementById("message").value = '';
 });
 
 
@@ -308,69 +375,77 @@ $('#write-chat').click(async() => {
 async function checkForNotifications() {
 	//console.log('Checking for new notifications');
 
-	const updates = await core.checkUserInboxForUpdates(await core.getInboxUrl(userWebId));		//HECHO
+	const updates = await core.checkUserInboxForUpdates(await core.getInboxUrl(userWebId)); //HECHO
 
 	updates.forEach(async(fileurl) => {
-		
+
+		//console.log(fileurl);
+
 		// check for new 
 		let newMessageFound = false;
 		console.log("Buscando nuevos mensajes");
-		let message = await core.getNewMessage(fileurl, userWebId);
-		//console.log(message);
-		if(message) {
+		let message = await core.getNewMessage(fileurl, userWebId, dataSync);
+		console.log(message);
+		if (message) {
 			console.log("Guardando mensajes");
-			interlocutorMessages.push(message);
+
 			newMessageFound = true;
-			if(openChat)
-				$("#messagesarea").val($("#messagesarea").val() + "\n" + intName + " [?]> " + message.messageTx);
-		}
-		
-		if(!newMessageFound) {
-		console.log("Buscando respuesta a invitación");
-		const response = await core.getResponseToInvitation(fileurl);
-		if (response) {
-			console.log("Procesando respuesta");
-			this.processResponseInNotification(response, fileurl);
-		} else {
-			console.log("Buscar invitacion");
-			const convoToJoin = await core.getJoinRequest(fileurl, userWebId);
-			//console.log(convoToJoin);
-			if (convoToJoin) {
-				console.log("Procesando nuevo chat");
-				chatsToJoin.push(await core.processChatToJoin(convoToJoin, fileurl));
+			if (openChat) {
+				$("#messagesarea").val($("#messagesarea").val() + "\n" + message.author + " [?]> " + message.messageTx);
+			} else {
+				//If open there is no need to store them
+				interlocutorMessages.push(message);
 			}
-		} }
+		}
+
+		if (!newMessageFound) {
+			console.log("Buscando respuesta a invitación");
+			const response = await core.getResponseToInvitation(fileurl);
+			if (response) {
+				console.log("Procesando respuesta");
+				this.processResponseInNotification(response, fileurl);
+			} else {
+				console.log("Buscar invitacion");
+				const convoToJoin = await core.getJoinRequest(fileurl, userWebId);
+				//console.log(convoToJoin);
+				if (convoToJoin) {
+					console.log("Procesando nuevo chat");
+					console.log(convoToJoin);
+					chatsToJoin.push(await core.processChatToJoin(convoToJoin, fileurl));
+				}
+			}
+		}
 	});
 	//console.log(interlocutorMessages);
 	//console.log(chatsToJoin);
 }
 
 /**
- * This method processes a response to an invitation to join a game.
+ * This method processes a response to an invitation to join a chat.
  * @param response: the object representing the response.
  * @param fileurl: the url of the file containing the notification.
  * @returns {Promise<void>}
  */
 async function processResponseInNotification(response, fileurl) {
 	const rsvpResponse = await core.getObjectFromPredicateForResource(response.responseUrl, namespaces.schema + 'rsvpResponse');
+
 	let chatUrl = await core.getObjectFromPredicateForResource(response.invitationUrl, namespaces.schema + 'event');
 
 	if (chatUrl) {
 		chatUrl = chatUrl.value;
-		
+
 		if (semanticChat && semanticChat.getUrl() === chatUrl) {
 			if (rsvpResponse.value === namespaces.schema + 'RsvpResponseYes') {
 				//$('#real-time-setup .modal-body ul').append('<li>Invitation accepted</li><li>Setting up direct connection</li>');
-				webrtc.start();
+				//webrtc.start();
 			}
-		}
-		else {
+		} else {
 			let convoName = await core.getObjectFromPredicateForResource(chatUrl, namespaces.schema + 'name');
 
 			const loader = new Loader(auth.fetch);
 
-			//const friendWebId = await loader.findWebIdOfInterlocutor(chatUrl, userWebId);
-			const friendsName = "Unknown"; //await core.getFormattedName(friendWebId);
+			const friendWebId = await loader.findWebIdOfInterlocutor(chatUrl, userWebId);
+			const friendsName = await core.getFormattedName(friendWebId);
 
 			//show response in UI
 			if (!convoName) {
@@ -405,16 +480,19 @@ async function processResponseInNotification(response, fileurl) {
 
 		dataSync.deleteFileForUser(fileurl);
 	} else {
-		console.log(`No game url was found for response ${response.value}.`);
+		console.log(`No chat url was found for response ${response.value}.`);
 	}
 }
 
-$('#clear-inbox-btn').click(async () => {
-  const resources = await core.getAllResourcesInInbox(await core.getInboxUrl(userWebId));
-  
-  resources.forEach(async r => {
-    if (await core.fileContainsChatInfo(r)) {
-      dataSync.deleteFileForUser(r);
-    }
-  });
+/**
+ *	This method is in charge of deleting the user's inbox. WARNING. a little risky
+ */
+$('#clear-inbox-btn').click(async() => {
+	const resources = await core.getAllResourcesInInbox(await core.getInboxUrl(userWebId));
+
+	resources.forEach(async r => {
+		if (await core.fileContainsChatInfo(r)) {
+			dataSync.deleteFileForUser(r);
+		}
+	});
 });

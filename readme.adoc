@@ -16,6 +16,74 @@ Mª Isabel Fernández Pérez
 
 Álvaro González Carracedo
 
+Jorge Iturrioz del Vigo
+
+== Getting started
+
+First of all, you have to install npm (see how to do it below):
+
+=== Windows
+
+- Download the Windows installer from the http://nodejs.org/[Nodes.js® web site]
+- Run the installer you've just downloaded
+- Follow the prompts in the installer
+- Restart your computer
+
+=== Mac
+
+Before installing npm, we need to install two other applications:
+
+* XCode: Apple's XCode development software is used to build Mac and iOS apps, but it also includes the tools you need to compile software for use on your Mac. You can get it here at https://itunes.apple.com/us/app/xcode/id497799835?mt=12[Apple App Store]
+
+* Homebrew: Homebrew is a package manager for the Mac — it makes installing most open source sofware (like Node) much easier. To install Homebrew just open Terminal and type:
+
+----
+ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+----
+
+You'll see messages in the Terminal explaining what you need to do to complete the installation process.
+Once homebrew is installed, you have to do type the following:
+
+----
+brew install node
+----
+And there we go
+
+=== Linux
+
+You need to install a number of dependancies before you can install Node.js and NPM:
+* For Ubuntu or Debian-based Linux distributions, run the following command in your terminal:
+
+----
+sudo apt-get install build-essential curl git m4 ruby texinfo libbz2-dev libcurl4-openssl-dev libexpat-dev libncurses-dev zlib1g-dev
+----
+
+* For Fedora based Linux distributions run the following command in your terminal application:
+
+----
+sudo yum groupinstall 'Development Tools' && sudo yum install curl git m4 ruby texinfo bzip2-devel curl-devel expat-devel ncurses-devel zlib-devel
+----
+
+Homebrew:
+To install Homebrew for Linux, open your terminal application and paste in the command:
+----
+ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/linuxbrew/go/install)"
+----
+
+Once Linuxbrew is installed, you’ll need add the following 3 lines to your .bashrc or .zshrc file:
+
+----
+export PATH="$HOME/.linuxbrew/bin:$PATH"
+export MANPATH="$HOME/.linuxbrew/share/man:$MANPATH"
+export INFOPATH="$HOME/.linuxbrew/share/info:$INFOPATH"
+----
+
+Once everything is done, you have to open your terminal and type:
+----
+brew install node
+----
+And that's it.
+
 == Build documentation
 
 The documentation is done in http://asciidoc.org/[AsciiDoc]
@@ -23,24 +91,39 @@ using the https://arc42.org/[arc42] templates.
 The source documents are located at
  https://github.com/Arquisoft/dechat_es6a/tree/master/src/docs[src/docs].
 
-Using https://maven.apache.org/[Maven] and the
-https://asciidoctor.org/[AsciiDoctor plugin] it is possible to generate
-the documentation running:
+To generate the documentation, you have to install gulp:
 
 ----
-mvn generate-resources
+npm install gulp
+----
+
+Once installed, running gulp generates the documentation:
+
+----
+gulp
 ----
 
 == Compile and run
 
-The skeleton project is a simple
- https://spring.io/projects/spring-boot[Spring-boot] application which can be run as:
+To run the application, you have to install http-server:
 
 ----
- mvn spring-boot:run
+ npm install http-server -g
 ----
 
-Once executed, the application should be available at: http://localhost:8080
+And then execute the following command :
+
+----
+ npm run build:web
+----
+
+Then, run the command
+
+----
+http-server
+----
+
+It will shows some IP addresses where the application will be available.
 
 == Testing
 
@@ -55,7 +138,7 @@ There are also some
 To run tests execute:
 
 ----
-mvn test
+npm test
 ----
 
 == Site documentation

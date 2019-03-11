@@ -1,7 +1,7 @@
 # language: en
-Feature: Search users
+Feature: Chat with someone
 
-Scenario: Search a user
+Scenario: Start new chat
 Given I go to the landing page
-When I search user "Pepe"
-Then I obtain a 200 message
+When I click start new chat button
+Then it shows people I can chat
