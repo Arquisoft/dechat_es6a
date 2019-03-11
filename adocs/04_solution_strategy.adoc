@@ -5,8 +5,30 @@
 
 ****
 In this block we will talk about fundamental decisions as well as the architecture that shapes our system.
+****
 
-We will start talking about technological decisions.
+****
+We will start talking about technological decisions:
 
-- These types of decisions are no more than decisions about the decomposition of the system at a high level
+****
+
+****
+Decisions about the top-level decomposition of the system:
+
+- These types of decisions are no more than decisions about the decomposition of the system at a high level.
+****
+
+****
+
+Decisions on the key quality objectives:
+****
+
+****
+Relevant organizational decisions:
+
+- In our case, the development process was the one stipulated by the group.
+
+- Each member of the group had a task, usually in conjunction with other members.
+
+- The process of development up to now consists of different phases, which have been developed by assignment of tasks.
 ****
