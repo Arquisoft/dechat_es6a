@@ -144,7 +144,7 @@ npm test
 == Site documentation
 
 The https://github.com/Arquisoft/dechat_es6a/tree/master/pom.xml[pom.xml] file
- has also been configured to generate site project documentation running:
+ has also been configured to generate site project documentation. To do this, it is necessary to install Maven, and then, run the following command:
 
 ----
 mvn site
