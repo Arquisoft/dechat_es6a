@@ -1,8 +1,6 @@
 [[section-technical-risks]]
 == Risks and Technical Debts
 
-
-[role="arc42help"]
 ****
 In this document we will be talking about risks and technical debts, ordered by priority. As its said, we have the following:
 
@@ -13,3 +11,4 @@ In this document we will be talking about risks and technical debts, ordered by 
 * Docker: We had a demonstration about Docker and how a POD could be created, so we talked once about using it. However, we haven't enough knowledge about it, so, if we are finally using it, we will have to spend time learning how it works.
 
 WARNING: This document is WIP (Work in Progress), so it may change in the near future.
+****

@@ -1,7 +1,15 @@
-language: java
-sudo: false # faster builds
-jdk:
-- oraclejdk8
-script: "mvn test"
-after_success:
-  - bash <(curl -s https://codecov.io/bash)
+language: node_js
+node_js:
+- "stable"
+before_script:
+- cd src
+- npm install -g protractor
+- npm install -g http-server
+- npm install -g selenium-webdriver
+- sudo apt-get install xvfb
+- http-server &
+- webdriver-manager update --standalone
+- webdriver-manager start &
+- sleep 5
+script: npm test
+after_success: npm run coverage

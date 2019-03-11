@@ -1,8 +1,6 @@
 [[section-runtime-view]]
 == Runtime View
 
-
-[role="arc42help"]
 ****
 .Disclaimer
 At the current stage of the project, there is not enough information available to complete this section.
