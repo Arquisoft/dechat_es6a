@@ -677,7 +677,7 @@ class DeChatCore {
 						const messageUrl = result['?message'].value;
 						const messageTx = result['?msgtext'].value.split("/inbox/")[1].replace(/U\+0020/g, " ");
 						const author = result['?username'].value.replace(/U\+0020/g, " ");
-						const time = result['?time'].value;
+						const time = result['?time'].value.split("/")[4];
 						const inboxUrl = fileurl;
 						deferred.resolve({
 							inboxUrl,
