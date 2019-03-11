@@ -11,26 +11,26 @@ Let's highlight four fundamental decisions.
 ****
 
 ****
-Technological decisions:
+**Technological decisions:**
 
 ****
 
 ****
-Decisions about the top-level decomposition of the system:
+**Decisions about the top-level decomposition of the system:**
 
 - These types of decisions are no more than decisions about the decomposition of the system at a high level.
 ****
 
 ****
 
-Decisions on the key quality objectives:
+**Decisions on the key quality objectives:**
 
 - This type of decision was made with all the members of the group agreeing.
 
 ****
 
 ****
-Relevant organizational decisions:
+**Relevant organizational decisions:**
 
 - In our case, the development process was the one stipulated by the group.
 
