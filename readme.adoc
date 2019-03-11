@@ -52,6 +52,7 @@ And there we go
 === Linux
 
 You need to install a number of dependancies before you can install Node.js and NPM:
+
 * For Ubuntu or Debian-based Linux distributions, run the following command in your terminal:
 
 ----
