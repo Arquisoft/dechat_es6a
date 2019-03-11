@@ -26,7 +26,7 @@ let openChat = false;
  */
 $('.login-btn').click(() => {
 	auth.popupLogin({
-		popupUri: 'popup.html'
+		popupUri: 'https://solid.github.io/solid-auth-client/dist/popup.html'
 	});
 });
 
