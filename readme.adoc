@@ -22,14 +22,14 @@ Jorge Iturrioz del Vigo
 
 First of all, you have to install npm (see how to do it below):
 
-== Windows
+=== Windows
 
 - Download the Windows installer from the http://nodejs.org/[Nodes.js® web site]
 - Run the installer you've just downloaded
 - Follow the prompts in the installer
 - Restart your computer
 
-== Mac
+=== Mac
 
 Before installing npm, we need to install two other applications:
 
@@ -49,7 +49,7 @@ brew install node
 ----
 And there we go
 
-== Linux
+=== Linux
 
 You need to install a number of dependancies before you can install Node.js and NPM:
 * For Ubuntu or Debian-based Linux distributions, run the following command in your terminal:
