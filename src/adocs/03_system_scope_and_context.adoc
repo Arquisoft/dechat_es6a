@@ -1,0 +1,23 @@
+[[section-system-scope-and-context]]
+== System Scope and Context
+
+
+
+****
+.Contents
+This project is part of the Software Architecture subject.
+Our system scope is the implementation and testing of a descentralized chat using SOLID. For this, we use the architectural style peer-to-peer.
+
+****
+
+
+=== Business Context
+
+
+****
+
+****
+
+**Business Context diagram**
+
+image::https://github.com/Arquisoft/dechat_es6a/blob/docs/scope/src/docs/images/BussinesContext.jpg[Settings gh-pages,800]

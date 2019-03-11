@@ -1,0 +1,12 @@
+[[section-solution-strategy]]
+== Solution Strategy
+
+
+
+****
+In this block we will talk about fundamental decisions as well as the architecture that shapes our system.
+
+We will start talking about technological decisions.
+
+- These types of decisions are no more than decisions about the decomposition of the system at a high level
+****
