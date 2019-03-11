@@ -1,0 +1,38 @@
+[[section-architecture-constraints]]
+== Architecture Constraints
+
+
+
+****
+.Technical Constraints
+|===
+|Constraint |Explanation 
+
+|Decentralized architecture.
+|The project architecture must be decentralized, so that user data is separated from the application that makes use of it. To achieve this, the app will be based on solid specifications.
+
+|Free software
+|As the budget for the project is non-existant, due to its educational purpose and resources, only free software may be employed to achieve its goals.
+|===
+
+.Organizational Constraints
+|===
+|Constraint |Explanation 
+
+|Software development through GitHub.
+|A GitHub repository (dechat_es6a) must be used in order to keep the development updated and available to all participants at any time.
+
+|Time
+|There is limited time to complete the project. There are several checkpoints to be reached, with closure at 30th April; final version of documentation and prototype must be completed by this date.
+
+|===
+
+.Conventions
+|===
+|Constraint |Explanation 
+
+|Arc42 template for documentation.
+|As a template for the documentation of the project, we must use Arc42 (https://arc42.org/).
+
+|===
+****
