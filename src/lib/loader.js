@@ -74,9 +74,9 @@ class Loader {
 
 					if (data['?msgtext']) {
 						results.push({
-							messagetext: data['?msgtext'].value.split("/")[4],
+							messagetext: data['?msgtext'].value.split("/")[4].replace("U+0020", " "),
 							url: data['?message'].value,
-							author: data['?username'].value.split("/")[4]
+							author: data['?username'].value.split("/")[4].replace("U+0020", " ")
 						});
 					}
 				});
