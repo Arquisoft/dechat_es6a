@@ -1,0 +1,43 @@
+{
+  "name": "dechat_6a",
+  "version": "0.0.1",
+  "description": "Decentralized, solid-based chat",
+  "main": "index.js",
+  "scripts": {
+    "test": "./node_modules/.bin/protractor test/e2e-tests/protractor.conf.js",
+    "build:web": "webpack --config webpack.config.js",
+    "build": "ng build",
+    "doc": "./node_modules/.bin/jsdoc -c jsdoc.json ./lib"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Arquisoft/dechat_es6a"
+  },
+  "author": "Jorge Fidalgo <UO258524@uniovi.es>",
+  "bugs": {
+    "url": "https://github.com/Arquisoft/dechat_es6a/issues"
+  },
+  "homepage": "https://github.com/Arquisoft/dechat_es6a/blob/master/readme.adoc",
+  "devDependencies": {
+    "@11ty/eleventy": "^0.7.1",
+    "jsdoc": "^3.5.5",
+    "minami": "^1.2.3",
+    "webpack": "^4.23.1",
+    "webpack-cli": "^3.1.2"
+  },
+  "dependencies": {
+    "@comunica/actor-init-sparql-rdfjs": "1.4.2",
+    "@solid/cli": "^0.1.0",
+    "@solid/query-ldflex": "^1.1.1",
+    "date-fns": "^2.0.0-alpha.25",
+    "inquirer": "^6.2.0",
+    "n3": "^1.0.2",
+    "prefix-ns": "^0.1.2",
+    "q": "^1.5.1",
+    "solid-auth-client": "^2.2.10",
+    "streamify-array": "^1.0.1",
+    "uniqid": "^5.0.3",
+    "uri-js": "^4.2.2",
+    "winston": "^3.1.0"
+  }
+}
