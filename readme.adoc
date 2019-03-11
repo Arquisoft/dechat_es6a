@@ -112,13 +112,13 @@ To run the application, you have to install http-server:
  npm install http-server -g
 ----
 
-And then execute the following command :
+And then execute the following command:
 
 ----
  npm run build:web
 ----
 
-Then, run the command
+Lastly, run the command:
 
 ----
 http-server
