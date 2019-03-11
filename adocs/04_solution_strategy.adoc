@@ -5,10 +5,13 @@
 
 ****
 In this block we will talk about fundamental decisions as well as the architecture that shapes our system.
+
+
+Let's highlight four fundamental decisions.
 ****
 
 ****
-We will start talking about technological decisions:
+Technological decisions:
 
 ****
 
@@ -21,6 +24,9 @@ Decisions about the top-level decomposition of the system:
 ****
 
 Decisions on the key quality objectives:
+
+- This type of decision was made with all the members of the group agreeing.
+
 ****
 
 ****
@@ -32,3 +38,5 @@ Relevant organizational decisions:
 
 - The process of development up to now consists of different phases, which have been developed by assignment of tasks.
 ****
+
+**"Unfinished document"**
