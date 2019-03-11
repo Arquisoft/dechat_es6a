@@ -269,7 +269,7 @@ $('#open-btn').click(async() => {
  */
 async function openExistingChat(chatUrl) {
 	setUpForEveryChatOption();
-
+	
 	const loader = new Loader(auth.fetch);
 	semanticChat = await loader.loadFromUrl(chatUrl, userWebId, userDataUrl);
 
@@ -301,7 +301,7 @@ async function setUpChat() {
 	if (semanticChat) {
 		//console.log(semanticChat.getMessages());
 		semanticChat.getMessages().forEach(async(message) => {
-			$("#messagesarea").val($("#messagesarea").val() + "\n" + message.author + " [?]> " + message.messagetext);
+			$("#messagesarea").val($("#messagesarea").val() + "\n" + message.author + " [" + message.time + "]> " + message.messagetext);
 		});
 	}
 
@@ -321,12 +321,11 @@ async function setUpChat() {
 	while (i < interlocutorMessages.length) {
 		//console.log("interloc author is: " + interlocutorMessages[i].author); //...../Deker //Yarrick is better
 		var nameThroughUrl = interlocutorMessages[i].author.split("/").pop();
-		console.log(interlocutorMessages);
 		console.log("nombre de authorUrl is:" + nameThroughUrl);
 		console.log("original interlocutorName is:" + intName);
 		if (nameThroughUrl === intName) {
-			$("#messagesarea").val($("#messagesarea").val() + "\n" + intName + " [?]> " + interlocutorMessages[i].messageTx);
-			await core.storeMessage(userDataUrl, interlocutorMessages[i].author, userWebId, null, interlocutorMessages[i].messageTx, interlocWebId, dataSync, false);
+			$("#messagesarea").val($("#messagesarea").val() + "\n" + intName + " ["+interlocutorMessages[i].time+"]> " + interlocutorMessages[i].messageTx);
+			await core.storeMessage(userDataUrl, interlocutorMessages[i].author, userWebId, interlocutorMessages[i].time, interlocutorMessages[i].messageTx, interlocWebId, dataSync, false);
 			dataSync.deleteFileForUser(interlocutorMessages[i].inboxUrl);
 			interlocutorMessages[i] = "D";
 			console.log("Matching names. All Correct");
@@ -348,22 +347,15 @@ async function setUpChat() {
  *	This method is in charge of sending the message and showing it in the text Area
  */
 $('#write-chat').click(async() => {
-	var d = new Date();
-	var options = {
-		year: 'numeric',
-		month: 'numeric',
-		day: 'numeric',
-		hour: 'numeric',
-		minute: 'numeric'
-	};
 	const username = $('#user-name').text();
 	const message = $("#message").val();
+	var dateFormat = require('date-fns');
+	var now = new Date();
+	const time = "21" + dateFormat.format(now, "yy-MM-dd") + "T" + dateFormat.format(now, "hh-mm-ss");
 
-	$("#messagesarea").val($("#messagesarea").val() + "\n" + username + " [" + d.toLocaleDateString("en-US", options) + "]> " + message);
-	await core.storeMessage(userDataUrl, username, userWebId, d, message, interlocWebId, dataSync, true);
+	$("#messagesarea").val($("#messagesarea").val() + "\n" + username + " [" + time + "]> " + message);
+	await core.storeMessage(userDataUrl, username, userWebId, time, message, interlocWebId, dataSync, true);
 
-	//$("#message").attr('value', '');
-	document.getElementById("message").value = '';
 });
 
 
@@ -391,7 +383,8 @@ async function checkForNotifications() {
 
 			newMessageFound = true;
 			if (openChat) {
-				$("#messagesarea").val($("#messagesarea").val() + "\n" + message.author + " [?]> " + message.messageTx);
+				$("#messagesarea").val($("#messagesarea").val() + "\n" + message.author + " ["+ message.time +"]> " + message.messageTx);
+				await core.storeMessage(userDataUrl, message.author, userWebId, message.time, message.messageTx, interlocWebId, dataSync, false);
 			} else {
 				//If open there is no need to store them
 				interlocutorMessages.push(message);

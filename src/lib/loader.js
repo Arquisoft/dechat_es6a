@@ -23,11 +23,7 @@ class Loader {
 	 * This method loads the messages from the url passed through the parameter
 	 */
 	async loadFromUrl(chatUrl, userWebId, chatBaseUrl) {
-		const rdfjsSource = await this._getRDFjsSourceFromUrl(chatUrl);
-		const sources = [{
-			type: 'rdfjsSource',
-			value: rdfjsSource
-		}];
+
 		//const interlocutorWebId = await this.findWebIdOfInterlocutor(chatUrl, userWebId);
 		//console.log(interlocutorWebId);
 
@@ -37,7 +33,7 @@ class Loader {
 			userWebId
 			//interlocutorWebId
 		});
-
+		console.log("C");
 		const messages = await this._findMessage(chatUrl);
 		//console.log("friendWebId in loader.js is: " +interlocutorWebId);
 		//console.log(messages);
@@ -58,9 +54,9 @@ class Loader {
 
 		const rdfjsSource = await this._getRDFjsSourceFromUrl(messageUrl);
 		let nextMessageFound = false;
-
 		this.engine.query(`SELECT * {
 		?message a <${namespaces.schema}Message>;
+		<${namespaces.schema}dateSent> ?time;
 		<${namespaces.schema}givenName> ?username;				
 		<${namespaces.schema}text> ?msgtext. }`, {
 				sources: [{
@@ -71,12 +67,14 @@ class Loader {
 			.then(function (result) {
 				result.bindingsStream.on('data', data => {
 					data = data.toObject();
-
 					if (data['?msgtext']) {
+						var messageText = data['?msgtext'].value.split("/")[4];
+						var author = data['?username'].value.split("/")[4];
 						results.push({
-							messagetext: data['?msgtext'].value.split("/")[4].replace("U+0020", " "),
+							messagetext: messageText.replace(/U\+0020/g, " "),
 							url: data['?message'].value,
-							author: data['?username'].value.split("/")[4].replace("U+0020", " ")
+							author: author.replace(/U\+0020/g, " "),
+							time: data['?time'].value.split("/")[4]
 						});
 					}
 				});
